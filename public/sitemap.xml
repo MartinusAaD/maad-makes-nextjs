@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="https://www.w3.org/1999/xhtml">
+
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://maadmakes.no/</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="no" href="https://maadmakes.no/" />
+  </url>
+  
+  <!-- Store -->
+  <url>
+    <loc>https://maadmakes.no/store</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="no" href="https://maadmakes.no/store" />
+  </url>
+  
+  <!-- Portfolio -->
+  <url>
+    <loc>https://maadmakes.no/portfolio</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="no" href="https://maadmakes.no/portfolio" />
+  </url>
+  
+  <!-- Contact -->
+  <url>
+    <loc>https://maadmakes.no/contact</loc>
+    <lastmod>2026-02-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="no" href="https://maadmakes.no/contact" />
+  </url>
+  
+</urlset>

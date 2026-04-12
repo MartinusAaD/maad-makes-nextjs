@@ -1,0 +1,17 @@
+# robots.txt for MAaD Makes
+User-agent: *
+Allow: /
+
+# Disallow admin and user-specific pages
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /cart
+Disallow: /login
+Disallow: /orders
+
+# Sitemap location
+Sitemap: https://maadmakes.no/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
