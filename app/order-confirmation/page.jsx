@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useImages } from "@/context/ImagesContext";
@@ -18,11 +18,17 @@ export default function OrderConfirmationPage() {
   const { images } = useImages();
   const [orderData, setOrderData] = useState(null);
 
+  const initialized = useRef(false);
+
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     const stored = sessionStorage.getItem("pendingOrderData");
     if (stored) {
       setOrderData(JSON.parse(stored));
       sessionStorage.removeItem("pendingOrderData");
+      window.scrollTo(0, 0);
     } else {
       router.push("/");
     }
