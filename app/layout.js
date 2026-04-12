@@ -3,6 +3,8 @@ import Providers from "./providers";
 import Navbar from "@/components/Navbar/Navbar";
 import NavbarAdmin from "@/components/NavbarAdmin/NavbarAdmin";
 import Footer from "@/components/Footer/Footer";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   title: "MAaD Makes | Custom 3D Printed Products & Located in Norway",
@@ -92,6 +94,9 @@ export default function RootLayout({ children }) {
             <Footer />
           </footer>
         </Providers>
+        {/* Vercel Analytics and Speed Insights */}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
