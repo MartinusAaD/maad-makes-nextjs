@@ -1,28 +1,6 @@
 @import "tailwindcss";
 @plugin "../node_modules/@tailwindcss/typography";
 
-@font-face {
-  font-family: "Roboto";
-  src: url("/fonts/Roboto-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Roboto";
-  src: url("/fonts/Roboto-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Roboto";
-  src: url("/fonts/Roboto-Italic.ttf") format("truetype");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
 @theme {
   /* Colors */
   --color-primary: #113e53;
@@ -58,7 +36,7 @@
 }
 
 body {
-  font-family: Roboto, Arial, Helvetica, sans-serif;
+  font-family: var(--font-roboto), Arial, Helvetica, sans-serif;
   min-height: 100dvh;
   background: var(--color-bg-light);
   color: var(--color-dark);

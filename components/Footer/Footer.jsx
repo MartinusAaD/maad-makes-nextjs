@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
 import { MdMailOutline } from "react-icons/md";
 import { FaLinkedin } from "react-icons/fa";
@@ -24,9 +25,11 @@ const Footer = () => {
 
             {/* Picutre of Yours Truly */}
             <div className="w-full flex justify-center items-center">
-              <img
+              <Image
                 src="/images/martinus-headshot.jpg"
                 alt="Image of Martinus"
+                width={160}
+                height={160}
                 className="rounded-full w-full max-w-40"
               />
             </div>

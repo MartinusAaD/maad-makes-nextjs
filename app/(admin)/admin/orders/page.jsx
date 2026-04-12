@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useOrders, ORDER_STATUSES } from "@/context/OrdersContext";
 import { useImages } from "@/context/ImagesContext";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
@@ -624,13 +625,15 @@ export default function OrdersPage() {
                             key={index}
                             className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded border border-gray-200"
                           >
-                            <img
-                              src={getImageUrl(item.thumbnailId)}
+                            <Image
+                              src={
+                                getImageUrl(item.thumbnailId) ||
+                                "/images/image-not-found.png"
+                              }
                               alt={item.title}
+                              width={48}
+                              height={48}
                               className="h-full w-full object-cover"
-                              onError={(e) => {
-                                e.target.src = "/images/image-not-found.png";
-                              }}
                             />
                             {item.quantity > 1 && (
                               <div className="absolute right-0 top-0 rounded-bl bg-black bg-opacity-75 px-1 py-0.5 text-[10px] font-medium text-white">

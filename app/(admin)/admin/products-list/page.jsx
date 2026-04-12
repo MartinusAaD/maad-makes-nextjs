@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useProducts } from "@/context/ProductsContext";
 import {
   addDoc,
@@ -370,23 +371,15 @@ export default function ProductsListPage() {
                     </div>
 
                     <div className="w-20 h-20 flex items-center justify-center rounded-xl overflow-hidden shrink-0">
-                      {thumbnailImage ? (
-                        <img
-                          src={thumbnailImage.url}
-                          alt={thumbnailImage.alt || "Product thumbnail"}
-                          className="w-full h-full object-contain rounded"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/images/image-not-found.png";
-                          }}
-                        />
-                      ) : (
-                        <img
-                          src="/images/image-not-found.png"
-                          alt="No image available"
-                          className="w-full h-full object-contain rounded"
-                        />
-                      )}
+                      <Image
+                        src={
+                          thumbnailImage?.url || "/images/image-not-found.png"
+                        }
+                        alt={thumbnailImage?.alt || "No image available"}
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-contain rounded"
+                      />
                     </div>
                   </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -103,10 +104,11 @@ const Navbar = () => {
                 className="text-light no-underline flex justify-center items-center"
                 onClick={closeMobileMenu}
               >
-                <img
+                <Image
                   src="/icons/maad-makes-logo-white.svg"
                   alt="Maad Makes logo"
-                  className="size-[70px]"
+                  width={70}
+                  height={70}
                 />
               </Link>
             </div>

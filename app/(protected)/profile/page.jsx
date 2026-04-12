@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useOrders, ORDER_STATUSES } from "@/context/OrdersContext";
 import { useImages } from "@/context/ImagesContext";
@@ -720,9 +721,14 @@ function OrderHistoryContent({ currentUser, orders, images, customerNumber }) {
             <div className="space-y-3 border-t border-gray-200 pt-4">
               {order.items.map((item, index) => (
                 <div key={index} className="flex gap-4">
-                  <img
-                    src={getImageUrl(item.thumbnailId)}
+                  <Image
+                    src={
+                      getImageUrl(item.thumbnailId) ||
+                      "/images/image-not-found.png"
+                    }
                     alt={item.title}
+                    width={80}
+                    height={80}
                     className="h-20 w-20 rounded-md border border-gray-200 object-cover"
                   />
                   <div className="flex-1">

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useImages } from "@/context/ImagesContext";
 import { useCart } from "@/context/CartContext";
 import { isProductOnSale } from "@/utils/productHelpers";
@@ -40,14 +41,15 @@ const ProductCard = ({ product, animationDelay = 0 }) => {
       title={product.title}
       style={{ animationDelay: `${animationDelay}s` }}
     >
-      <div className="w-full aspect-square overflow-hidden rounded-xl bg-gray-50">
-        <img
+      <div className="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-50">
+        <Image
           src={src || "/images/image-not-found.png"}
           alt={alt}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 50vw, 33vw"
           onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "/images/image-not-found.png";
+            e.currentTarget.src = "/images/image-not-found.png";
           }}
         />
       </div>

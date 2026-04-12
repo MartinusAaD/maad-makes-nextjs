@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useImages } from "@/context/ImagesContext";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
 import Button from "@/components/Button/Button";
@@ -155,9 +156,14 @@ export default function OrderConfirmationPage() {
               <div className="mb-6 space-y-4">
                 {orderData.items.map((item, index) => (
                   <div key={index} className="flex gap-4">
-                    <img
-                      src={getImageUrl(item.thumbnailId)}
+                    <Image
+                      src={
+                        getImageUrl(item.thumbnailId) ||
+                        "/images/image-not-found.png"
+                      }
                       alt={item.title}
+                      width={80}
+                      height={80}
                       className="h-20 w-20 rounded-md border border-gray-200 object-cover"
                     />
                     <div className="flex-1">

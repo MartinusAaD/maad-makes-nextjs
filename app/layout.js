@@ -1,10 +1,33 @@
 import "./globals.css";
+import localFont from "next/font/local";
 import Providers from "./providers";
 import Navbar from "@/components/Navbar/Navbar";
 import NavbarAdmin from "@/components/NavbarAdmin/NavbarAdmin";
 import Footer from "@/components/Footer/Footer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+
+const roboto = localFont({
+  src: [
+    {
+      path: "../public/fonts/Roboto-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Roboto-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Roboto-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+  ],
+  display: "swap",
+  variable: "--font-roboto",
+});
 
 export const metadata = {
   title: "MAaD Makes | Custom 3D Printed Products & Located in Norway",
@@ -76,7 +99,7 @@ const jsonLd = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className={`h-full antialiased ${roboto.variable}`}>
       <head>
         <script
           type="application/ld+json"

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { useOrders } from "@/context/OrdersContext";
 import { useImages } from "@/context/ImagesContext";
@@ -324,13 +325,14 @@ export default function CartPage() {
                       href={`/product/${item.slug}`}
                       className="flex-shrink-0"
                     >
-                      <img
+                      <Image
                         src={imgSrc}
                         alt={item.title}
+                        width={80}
+                        height={80}
                         className="w-20 h-20 object-cover rounded"
                         onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/images/image-not-found.png";
+                          e.currentTarget.src = "/images/image-not-found.png";
                         }}
                       />
                     </Link>
