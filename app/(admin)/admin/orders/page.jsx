@@ -163,7 +163,15 @@ export default function OrdersPage() {
       });
     }
 
-    if (statusFilter !== "all") {
+    if (statusFilter === "in-progress") {
+      filtered = filtered.filter(
+        (order) =>
+          order.status === ORDER_STATUSES.ACTIVE ||
+          order.status === ORDER_STATUSES.PRINTING ||
+          order.status === ORDER_STATUSES.PRINTED ||
+          order.status === ORDER_STATUSES.SHIPPED,
+      );
+    } else if (statusFilter !== "all") {
       filtered = filtered.filter((order) => order.status === statusFilter);
     }
 
@@ -406,9 +414,9 @@ export default function OrdersPage() {
           </div>
           <div
             className="rounded-lg border border-blue-200 bg-blue-50 p-4 shadow-sm"
-            title="Orders currently being processed"
+            title="Orders currently in progress (active, printing, printed, shipped)"
           >
-            <p className="text-sm text-blue-700">Active</p>
+            <p className="text-sm text-blue-700">In Progress</p>
             <p className="mt-1 text-2xl font-bold text-blue-900">
               {stats.active}
             </p>
@@ -518,11 +526,10 @@ export default function OrdersPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option value="all">All Statuses</option>
-                {Object.values(ORDER_STATUSES).map((status) => (
-                  <option key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
+                <option value={ORDER_STATUSES.PENDING}>Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value={ORDER_STATUSES.CANCELLED}>Cancelled</option>
+                <option value={ORDER_STATUSES.COMPLETED}>Completed</option>
               </FormSelect>
             </div>
 
