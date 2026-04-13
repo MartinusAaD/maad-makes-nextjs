@@ -10,6 +10,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronDown,
   faChevronUp,
+  faChevronLeft,
+  faChevronRight,
   faShoppingCart,
 } from "@fortawesome/free-solid-svg-icons";
 import { useProducts } from "@/context/ProductsContext";
@@ -122,6 +124,52 @@ export default function ProductPageContent() {
                 className="object-contain"
                 sizes="(max-width: 768px) 100vw, 50vw"
               />
+              {productImages.length > 1 && (
+                <>
+                  <button
+                    onClick={() =>
+                      setSelectedImageIndex((prev) =>
+                        prev === 0 ? productImages.length - 1 : prev - 1,
+                      )
+                    }
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition-all hover:scale-110 z-10"
+                    aria-label="Previous image"
+                  >
+                    <FontAwesomeIcon
+                      icon={faChevronLeft}
+                      className="text-primary text-sm"
+                    />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setSelectedImageIndex((prev) =>
+                        prev === productImages.length - 1 ? 0 : prev + 1,
+                      )
+                    }
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 hover:bg-white shadow-md transition-all hover:scale-110 z-10"
+                    aria-label="Next image"
+                  >
+                    <FontAwesomeIcon
+                      icon={faChevronRight}
+                      className="text-primary text-sm"
+                    />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                    {productImages.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedImageIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          i === selectedImageIndex
+                            ? "bg-primary scale-125"
+                            : "bg-white/70 hover:bg-white"
+                        }`}
+                        aria-label={`Go to image ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             {productImages.length > 1 && (
               <div className="flex gap-2 flex-wrap">

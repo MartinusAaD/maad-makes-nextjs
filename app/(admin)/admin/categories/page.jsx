@@ -266,8 +266,13 @@ export default function CategoriesPage() {
                         key={parent.id}
                         className="border border-bg-grey rounded-lg overflow-hidden"
                       >
-                        <button
+                        <div
+                          role="button"
+                          tabIndex={0}
                           onClick={() => toggleCategory(parent.id)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && toggleCategory(parent.id)
+                          }
                           className="w-full flex justify-between items-center p-4 bg-bg-light hover:bg-gray-100 transition-colors duration-200 cursor-pointer text-left"
                         >
                           <div className="flex-1 flex items-center gap-2 transition-all duration-200">
@@ -297,7 +302,7 @@ export default function CategoriesPage() {
                               Delete
                             </Button>
                           </div>
-                        </button>
+                        </div>
 
                         <div
                           className={`border-t border-bg-grey overflow-hidden transition-all duration-300 ease-in-out ${

@@ -77,130 +77,158 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="w-full flex flex-col gap-4 bg-bg-light py-6 min-h-screen">
-      <ResponsiveWidthWrapper>
-        <div className="flex flex-col justify-center items-center gap-4">
-          <h1 className="text-4xl font-bold">Contact Us</h1>
-
-          <section className="w-full max-w-2xl flex flex-col gap-2">
-            <p className="text-center mb-4">
-              Have any questions, feedback or want to ask about an order? Fill
-              out the form below or email us directly at{" "}
+    <div className="w-full flex flex-col bg-bg-light min-h-screen">
+      {/* Hero strip */}
+      <div className="relative overflow-hidden bg-primary-darker pt-28 pb-10 -mt-20">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+        <div className="absolute -right-20 top-0 h-72 w-72 rounded-full bg-primary-lighter/20 blur-[80px] pointer-events-none" />
+        <ResponsiveWidthWrapper>
+          {/* Contact info row */}
+          <div
+            className=" flex flex-wrap justify-center gap-6 opacity-0 animate-[fadeIn_0.7s_ease-out_forwards]"
+            style={{ animationDelay: "0.2s" }}
+          >
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary-lighter mb-1">
+                Direct email
+              </p>
               <a
                 href="mailto:maad.makes@gmail.com"
-                className="underline font-bold text-primary"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full"
               >
                 maad.makes@gmail.com
               </a>
-            </p>
-          </section>
+            </div>
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary-lighter mb-2">
+                Languages
+              </p>
+              <div className="flex gap-3 items-center mt-1">
+                <span className="fi fi-no text-3xl rounded shadow-sm" />
+                <span className="fi fi-gb text-3xl rounded shadow-sm" />
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary-lighter mb-1">
+                Response time
+              </p>
+              <p className="text-white/60 text-sm mt-1">1–2 business days</p>
+            </div>
+          </div>
+        </ResponsiveWidthWrapper>
+      </div>
 
-          <section className="flex gap-4">
-            <span className="fi fi-no text-4xl rounded-md"></span>
-            <span className="fi fi-gb text-4xl rounded-md"></span>
-          </section>
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            noValidate
-            className="w-full max-w-2xl"
+      <ResponsiveWidthWrapper>
+        <div className="px-4 py-12 max-w-2xl mx-auto w-full">
+          <div
+            className="opacity-0 animate-[fadeIn_0.7s_ease-out_forwards]"
+            style={{ animationDelay: "0.3s" }}
           >
-            <FormFieldset legend="Contact Form">
-              <FormGroup>
-                <FormLabel htmlFor="name">Name:</FormLabel>
-                <FormInput
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="Your name"
-                  error={hasError("name")}
-                />
-                <FormError error={errors.name} />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel htmlFor="email">Email:</FormLabel>
-                <FormInput
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="your.email@example.com"
-                  error={hasError("email")}
-                />
-                <FormError error={errors.email} />
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel htmlFor="subject">Subject:</FormLabel>
-                <FormSelect
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  error={hasError("subject")}
-                >
-                  <option value="">Select a subject</option>
-                  <option value="general">General</option>
-                  <option value="orderHelp">Help with an Order</option>
-                  <option value="customOrderRequest">
-                    Custom Order Request
-                  </option>
-                  <option value="waitlist">Waitlist</option>
-                  <option value="feedback">Feedback</option>
-                  <option value="other">Other</option>
-                </FormSelect>
-                <FormError error={errors.subject} />
-              </FormGroup>
-
-              {formData.subject === "order" && (
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <FormFieldset legend="Contact Us">
                 <FormGroup>
-                  <FormLabel htmlFor="orderNumber">
-                    Order Number (Optional):
-                  </FormLabel>
+                  <FormLabel htmlFor="name">Name:</FormLabel>
                   <FormInput
                     type="text"
-                    id="orderNumber"
-                    name="orderNumber"
-                    value={formData.orderNumber}
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    placeholder="e.g., 123"
+                    onBlur={handleBlur}
+                    placeholder="Your name"
+                    error={hasError("name")}
                   />
+                  <FormError error={errors.name} />
                 </FormGroup>
-              )}
 
-              <FormGroup>
-                <FormLabel htmlFor="message">Message:</FormLabel>
-                <FormTextarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  placeholder="Enter your message here..."
-                  rows={6}
-                  maxLength={1000}
-                  error={hasError("message")}
-                />
-                <FormError error={errors.message} />
-                <p
-                  className={`text-sm text-right mt-1 ${formData.message.length > 900 ? "text-red font-bold" : formData.message.length > 800 ? "text-yellow-darker" : "text-dark/60"}`}
-                >
-                  {formData.message.length} / 1000 characters
-                </p>
-              </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="email">Email:</FormLabel>
+                  <FormInput
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="your.email@example.com"
+                    error={hasError("email")}
+                  />
+                  <FormError error={errors.email} />
+                </FormGroup>
 
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Sending..." : "Send Message"}
-              </Button>
-            </FormFieldset>
-          </form>
+                <FormGroup>
+                  <FormLabel htmlFor="subject">Subject:</FormLabel>
+                  <FormSelect
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={hasError("subject")}
+                  >
+                    <option value="">Select a subject</option>
+                    <option value="general">General</option>
+                    <option value="orderHelp">Help with an Order</option>
+                    <option value="customOrderRequest">
+                      Custom Order Request
+                    </option>
+                    <option value="waitlist">Waitlist</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="other">Other</option>
+                  </FormSelect>
+                  <FormError error={errors.subject} />
+                </FormGroup>
+
+                {formData.subject === "order" && (
+                  <FormGroup>
+                    <FormLabel htmlFor="orderNumber">
+                      Order Number (Optional):
+                    </FormLabel>
+                    <FormInput
+                      type="text"
+                      id="orderNumber"
+                      name="orderNumber"
+                      value={formData.orderNumber}
+                      onChange={handleChange}
+                      placeholder="e.g., 123"
+                    />
+                  </FormGroup>
+                )}
+
+                <FormGroup>
+                  <FormLabel htmlFor="message">Message:</FormLabel>
+                  <FormTextarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Enter your message here..."
+                    rows={6}
+                    maxLength={1000}
+                    error={hasError("message")}
+                  />
+                  <FormError error={errors.message} />
+                  <p
+                    className={`text-sm text-right mt-1 ${formData.message.length > 900 ? "text-red font-bold" : formData.message.length > 800 ? "text-yellow-darker" : "text-dark/60"}`}
+                  >
+                    {formData.message.length} / 1000 characters
+                  </p>
+                </FormGroup>
+
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </Button>
+              </FormFieldset>
+            </form>
+          </div>
         </div>
       </ResponsiveWidthWrapper>
 
