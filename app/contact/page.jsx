@@ -92,8 +92,8 @@ export default function ContactPage() {
         <ResponsiveWidthWrapper>
           {/* Contact info row */}
           <div
-            className=" flex flex-wrap justify-center gap-6 opacity-0 animate-[fadeIn_0.7s_ease-out_forwards]"
-            style={{ animationDelay: "0.2s" }}
+            className=" flex flex-wrap justify-center gap-6 opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]"
+            style={{ animationDelay: "0.05s" }}
           >
             <div className="flex flex-col items-center">
               <p className="text-xs font-bold uppercase tracking-widest text-primary-lighter mb-1">
@@ -128,8 +128,8 @@ export default function ContactPage() {
       <ResponsiveWidthWrapper>
         <div className="px-4 py-12 max-w-2xl mx-auto w-full">
           <div
-            className="opacity-0 animate-[fadeIn_0.7s_ease-out_forwards]"
-            style={{ animationDelay: "0.3s" }}
+            className="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]"
+            style={{ animationDelay: "0.1s" }}
           >
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
               <FormFieldset legend="Contact Us">
