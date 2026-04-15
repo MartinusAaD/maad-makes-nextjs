@@ -26,6 +26,7 @@ const roboto = localFont({
     },
   ],
   display: "swap",
+  preload: false,
   variable: "--font-roboto",
 });
 

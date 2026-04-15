@@ -14,7 +14,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
 import { useOrders, ORDER_STATUSES } from "@/context/OrdersContext";
-import type { Order } from "@/types/order";
+import type { Order, OrderStatus } from "@/types/order";
 
 export default function DashboardPage() {
   const { orders } = useOrders();
@@ -24,12 +24,14 @@ export default function DashboardPage() {
   ).length;
 
   const activeOrders = orders.filter((order: Order) =>
-    [
-      ORDER_STATUSES.ACTIVE,
-      ORDER_STATUSES.PRINTING,
-      ORDER_STATUSES.PRINTED,
-      ORDER_STATUSES.SHIPPED,
-    ].includes(order.status),
+    (
+      [
+        ORDER_STATUSES.ACTIVE,
+        ORDER_STATUSES.PRINTING,
+        ORDER_STATUSES.PRINTED,
+        ORDER_STATUSES.SHIPPED,
+      ] as OrderStatus[]
+    ).includes(order.status),
   ).length;
 
   const totalOrders = orders.length;

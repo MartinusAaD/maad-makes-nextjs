@@ -598,10 +598,7 @@ export default function OrderDetailPage() {
                                   className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center gap-3 transition-colors"
                                 >
                                   <NextImage
-                                    src={getImageUrl(
-                                      product.thumbnailImageId ||
-                                        product.thumbnailId,
-                                    )}
+                                    src={getImageUrl(product.thumbnailId)}
                                     alt={product.title}
                                     width={48}
                                     height={48}

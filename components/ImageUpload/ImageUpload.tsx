@@ -26,7 +26,7 @@ const ImageUpload = () => {
 
     const timer = setTimeout(() => {
       setFeedbackMessage("");
-    }, 7000);I 
+    }, 7000);
 
     return () => clearTimeout(timer);
   }, [feedbackMessage]);

@@ -10,7 +10,7 @@ import { trackSignUp, trackLogin } from "@/utils/analytics";
 import useFormValidation from "@/hooks/useFormValidation";
 import FormError from "@/components/Form/FormError";
 
-interface LoginFormData {
+interface LoginFormData extends Record<string, unknown> {
   firstName: string;
   lastName: string;
   email: string;

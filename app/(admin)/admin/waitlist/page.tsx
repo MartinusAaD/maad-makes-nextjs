@@ -44,7 +44,7 @@ type WaitlistEntry = {
   createdAt?: Timestamp;
 };
 
-type WaitlistFormData = {
+type WaitlistFormData = Record<string, unknown> & {
   name: string;
   email: string;
   character: string;

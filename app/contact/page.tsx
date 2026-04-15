@@ -16,7 +16,7 @@ import "flag-icons/css/flag-icons.min.css";
 import { trackContactFormSubmit } from "@/utils/analytics";
 import useFormValidation from "@/hooks/useFormValidation";
 
-interface ContactFormData {
+interface ContactFormData extends Record<string, unknown> {
   name: string;
   email: string;
   subject: string;

@@ -67,23 +67,31 @@ const ProductsForm = () => {
       const product = products.find((p) => p.id === id);
       if (product) {
         // Convert arrays to comma-separated strings for form display
-        const productForForm = structuredClone(product);
+        const productForForm = structuredClone(product) as unknown as Record<
+          string,
+          unknown
+        >;
 
         if (Array.isArray(productForForm.materials)) {
-          productForForm.materials = productForForm.materials.join(", ");
+          productForForm.materials = (
+            productForForm.materials as string[]
+          ).join(", ");
         }
         if (Array.isArray(productForForm.colors)) {
-          productForForm.colors = productForForm.colors.join(", ");
+          productForForm.colors = (productForForm.colors as string[]).join(
+            ", ",
+          );
         }
         if (Array.isArray(productForForm.searchKeywords)) {
-          productForForm.searchKeywords =
-            productForForm.searchKeywords.join(", ");
+          productForForm.searchKeywords = (
+            productForForm.searchKeywords as string[]
+          ).join(", ");
         }
 
         // Use setTimeout to defer state updates and avoid cascading renders
         const timer = setTimeout(() => {
           setIsInEditMode(true);
-          setFormData(productForForm);
+          setFormData(productForForm as unknown as typeof productFormFields);
         }, 0);
         return () => clearTimeout(timer);
       }

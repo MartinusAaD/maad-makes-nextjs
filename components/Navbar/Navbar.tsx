@@ -119,6 +119,7 @@ const Navbar = () => {
                   alt="Maad Makes logo"
                   width={70}
                   height={70}
+                  priority
                 />
               </Link>
             </div>

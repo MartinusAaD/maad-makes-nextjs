@@ -382,7 +382,7 @@ export default function FilamentsPage() {
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md text-center">
                 <p className="text-2xl font-bold text-primary">
-                  {formatNumber(totalWeightInStock.toFixed(0))}g
+                  {formatNumber(Math.round(totalWeightInStock))}g
                 </p>
                 <p className="text-sm text-gray-600">Total Weight in Stock</p>
               </div>
@@ -394,7 +394,7 @@ export default function FilamentsPage() {
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md text-center">
                 <p className="text-2xl font-bold text-green-600">
-                  {formatNumber(totalWeightEver.toFixed(0))}g
+                  {formatNumber(Math.round(totalWeightEver))}g
                 </p>
                 <p className="text-sm text-gray-600">Total Weight Ever</p>
               </div>

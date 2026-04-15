@@ -40,7 +40,9 @@ export default function CategoriesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [alert, setAlert] = useState<AlertState | null>(null);
-  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState | null>(
+    null,
+  );
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
@@ -54,7 +56,9 @@ export default function CategoriesPage() {
     return categories.filter((cat: Category) => cat.parentId === parentId);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
