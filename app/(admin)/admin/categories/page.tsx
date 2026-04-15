@@ -11,14 +11,21 @@ import {
 } from "firebase/firestore";
 import { database } from "@/lib/firestoreConfig";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
-import Button from "@/components/Button/Button";
 import FormGroup from "@/components/Form/FormGroup";
 import FormLabel from "@/components/Form/FormLabel";
 import FormInput from "@/components/Form/FormInput";
 import FormSelect from "@/components/Form/FormSelect";
-import FormFieldset from "@/components/Form/FormFieldset";
 import Alert from "@/components/Alert/Alert";
 import AlertDialog from "@/components/AlertDialog/AlertDialog";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPlus,
+  faXmark,
+  faPencil,
+  faTrash,
+  faChevronRight,
+  faTag,
+} from "@fortawesome/free-solid-svg-icons";
 import type { Category } from "@/types/category";
 
 interface AlertState {
@@ -173,7 +180,7 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="w-full flex flex-col items-center gap-4 bg-bg-light py-6 min-h-screen">
+    <div className="w-full min-h-screen bg-bg-light">
       {alert && (
         <Alert
           alertMessage={alert.alertMessage}
@@ -192,44 +199,65 @@ export default function CategoriesPage() {
         />
       )}
 
-      <ResponsiveWidthWrapper>
-        <div className="w-full flex flex-col gap-6 mt-8">
-          <div className="flex flex-col gap-5 items-center">
-            <h1 className="text-4xl font-bold text-dark m-0">
-              Category Manager
-            </h1>
-            <Button onClick={() => setShowForm(!showForm)}>
-              {showForm ? "Cancel" : "Add New Category"}
-            </Button>
-          </div>
-
-          {showForm && (
-            <form
-              ref={formRef}
-              onSubmit={handleSubmit}
-              className="bg-white p-6 rounded-lg shadow-md"
+      {/* Page header */}
+      <div className="w-full bg-primary">
+        <ResponsiveWidthWrapper>
+          <div className="flex items-center justify-between py-6 gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-light tracking-tight">
+                Categories
+              </h1>
+              <p className="text-light/50 text-sm mt-0.5">
+                {categories.length} categor
+                {categories.length !== 1 ? "ies" : "y"} total
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (showForm && editingCategory) resetForm();
+                else setShowForm((v) => !v);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-light/10 hover:bg-light/20 text-light rounded-lg border border-light/20 transition-colors text-sm font-medium shrink-0"
             >
-              <FormFieldset
-                legend={
-                  editingCategory ? "Edit Category" : "Create New Category"
-                }
+              <FontAwesomeIcon
+                icon={showForm ? faXmark : faPlus}
+                className="w-3.5 h-3.5"
+              />
+              {showForm ? "Cancel" : "Add Category"}
+            </button>
+          </div>
+        </ResponsiveWidthWrapper>
+      </div>
+
+      <ResponsiveWidthWrapper>
+        <div className="w-full flex flex-col gap-6 py-8">
+          {/* Add / Edit form */}
+          {showForm && (
+            <div className="bg-white rounded-xl border border-bg-grey shadow-sm p-6">
+              <h2 className="text-base font-semibold text-dark mb-4">
+                {editingCategory ? "Edit Category" : "New Category"}
+              </h2>
+              <form
+                ref={formRef}
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-4"
               >
                 <FormGroup>
-                  <FormLabel htmlFor="name">Category Name: *</FormLabel>
+                  <FormLabel htmlFor="name">Category Name *</FormLabel>
                   <FormInput
                     type="text"
                     id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="e.g., Pokemon, Plushies, etc."
+                    placeholder="e.g. Pokemon, Plushies…"
                     required
                   />
                 </FormGroup>
 
                 <FormGroup>
                   <FormLabel htmlFor="parentId">
-                    Parent Category (optional):
+                    Parent Category (optional)
                   </FormLabel>
                   <FormSelect
                     id="parentId"
@@ -237,7 +265,7 @@ export default function CategoriesPage() {
                     value={formData.parentId || ""}
                     onChange={handleInputChange}
                   >
-                    <option value="">None (Top-level category)</option>
+                    <option value="">None — top-level category</option>
                     {parentCategories.map((cat) => (
                       <option
                         key={cat.id}
@@ -250,116 +278,148 @@ export default function CategoriesPage() {
                   </FormSelect>
                 </FormGroup>
 
-                <div className="flex gap-2">
-                  <Button type="submit">
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 text-sm bg-primary text-light border-none rounded-lg font-bold transition-colors hover:bg-primary-lighter"
+                  >
                     {editingCategory ? "Update Category" : "Create Category"}
-                  </Button>
-                  <Button onClick={resetForm} type="button">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="px-4 py-2 text-sm bg-bg-grey text-dark border-none rounded-lg font-bold transition-colors hover:bg-bg-grey/70"
+                  >
                     Cancel
-                  </Button>
+                  </button>
                 </div>
-              </FormFieldset>
-            </form>
+              </form>
+            </div>
           )}
 
-          <div className="bg-white p-6 rounded-lg shadow-md border-2 border-primary/40">
-            <h2 className="text-2xl font-bold text-primary mb-4">
-              Existing Categories
-            </h2>
-
+          {/* Category list */}
+          <div className="rounded-xl border border-bg-grey overflow-hidden bg-white shadow-sm">
             {loading ? (
-              <p>Loading categories...</p>
+              <div className="flex items-center justify-center py-16">
+                <p className="text-dark/40 text-sm">Loading categories...</p>
+              </div>
+            ) : parentCategories.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+                <div className="w-12 h-12 rounded-full bg-bg-grey flex items-center justify-center">
+                  <FontAwesomeIcon
+                    icon={faTag}
+                    className="w-4 h-4 text-dark/25"
+                  />
+                </div>
+                <p className="text-dark/50 font-medium text-sm">
+                  No categories yet
+                </p>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="text-primary text-sm underline underline-offset-2 hover:text-primary-lighter transition-colors"
+                >
+                  Create your first category
+                </button>
+              </div>
             ) : (
-              <div className="flex flex-col gap-4">
-                {parentCategories.length === 0 ? (
-                  <p className="text-gray-500">
-                    No categories yet. Create your first category!
-                  </p>
-                ) : (
-                  parentCategories.map((parent) => {
-                    const subcategories = getSubcategories(parent.id);
-                    const isExpanded = expandedCategories.includes(parent.id);
-                    return (
-                      <div
-                        key={parent.id}
-                        className="border border-bg-grey rounded-lg overflow-hidden"
-                      >
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => toggleCategory(parent.id)}
-                          onKeyDown={(e) =>
-                            e.key === "Enter" && toggleCategory(parent.id)
+              <ul className="list-none p-0 m-0 divide-y divide-bg-grey">
+                {parentCategories.map((parent) => {
+                  const subcategories = getSubcategories(parent.id);
+                  const isExpanded = expandedCategories.includes(parent.id);
+                  return (
+                    <li key={parent.id}>
+                      {/* Parent row */}
+                      <div className="flex items-center gap-3 px-4 py-3 hover:bg-bg-light/60 transition-colors">
+                        <button
+                          onClick={() =>
+                            subcategories.length > 0 &&
+                            toggleCategory(parent.id)
                           }
-                          className="w-full flex justify-between items-center p-4 bg-bg-light hover:bg-gray-100 transition-colors duration-200 cursor-pointer text-left"
+                          className={`w-6 h-6 flex items-center justify-center rounded transition-colors shrink-0 ${subcategories.length > 0 ? "text-primary/50 hover:text-primary hover:bg-primary/10 cursor-pointer" : "text-transparent cursor-default"}`}
+                          aria-label="Toggle subcategories"
                         >
-                          <div className="flex-1 flex items-center gap-2 transition-all duration-200">
-                            <span
-                              className={`text-primary font-bold text-lg transition-transform duration-300 ${isExpanded ? "rotate-90" : "rotate-0"}`}
-                            >
-                              ▶
+                          <FontAwesomeIcon
+                            icon={faChevronRight}
+                            className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                          />
+                        </button>
+
+                        <div className="flex-1 min-w-0">
+                          <span className="font-semibold text-dark text-sm">
+                            {parent.name}
+                          </span>
+                          {subcategories.length > 0 && (
+                            <span className="ml-2 text-xs text-dark/40">
+                              {subcategories.length} sub
+                              {subcategories.length !== 1 ? "s" : ""}
                             </span>
-                            <h3 className="text-xl font-bold text-dark m-0">
-                              {parent.name}
-                            </h3>
-                            {subcategories.length > 0 && (
-                              <span className="text-sm text-gray-500 ml-2">
-                                ({subcategories.length} subcategor
-                                {subcategories.length === 1 ? "y" : "ies"})
-                              </span>
-                            )}
-                          </div>
-                          <div
-                            className="flex gap-2"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Button onClick={() => handleEdit(parent)}>
-                              Edit
-                            </Button>
-                            <Button onClick={() => confirmDelete(parent)}>
-                              Delete
-                            </Button>
-                          </div>
+                          )}
                         </div>
 
-                        <div
-                          className={`border-t border-bg-grey overflow-hidden transition-all duration-300 ease-in-out ${
-                            isExpanded && subcategories.length > 0
-                              ? "max-h-500 opacity-100"
-                              : "max-h-0 opacity-0"
-                          }`}
-                        >
-                          <div className="p-4 ml-8 flex flex-col gap-2">
-                            <p className="text-sm font-semibold text-gray-600">
-                              Subcategories:
-                            </p>
-                            {subcategories.map((sub) => (
-                              <div
-                                key={sub.id}
-                                className="flex justify-between items-center bg-white p-3 rounded border-l-4 border-primary"
-                              >
-                                <div className="flex-1">
-                                  <p className="font-semibold text-dark m-0">
-                                    {sub.name}
-                                  </p>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button onClick={() => handleEdit(sub)}>
-                                    Edit
-                                  </Button>
-                                  <Button onClick={() => confirmDelete(sub)}>
-                                    Delete
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button
+                            onClick={() => handleEdit(parent)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary border-none rounded-lg font-bold transition-colors hover:bg-primary/20"
+                          >
+                            <FontAwesomeIcon
+                              icon={faPencil}
+                              className="w-3 h-3"
+                            />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => confirmDelete(parent)}
+                            className="flex items-center justify-center p-1.5 bg-red/10 text-red border-none rounded-lg transition-colors hover:bg-red hover:text-light"
+                          >
+                            <FontAwesomeIcon
+                              icon={faTrash}
+                              className="w-3 h-3"
+                            />
+                          </button>
                         </div>
                       </div>
-                    );
-                  })
-                )}
-              </div>
+
+                      {/* Subcategories */}
+                      {isExpanded && subcategories.length > 0 && (
+                        <ul className="list-none p-0 m-0 divide-y divide-bg-grey bg-bg-light/40">
+                          {subcategories.map((sub) => (
+                            <li
+                              key={sub.id}
+                              className="flex items-center gap-3 pl-12 pr-4 py-2.5 hover:bg-bg-light transition-colors"
+                            >
+                              <div className="w-1 h-1 rounded-full bg-primary/30 shrink-0" />
+                              <span className="flex-1 text-sm text-dark/80">
+                                {sub.name}
+                              </span>
+                              <div className="flex gap-2 shrink-0">
+                                <button
+                                  onClick={() => handleEdit(sub)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary/10 text-primary border-none rounded-lg font-bold transition-colors hover:bg-primary/20"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faPencil}
+                                    className="w-3 h-3"
+                                  />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => confirmDelete(sub)}
+                                  className="flex items-center justify-center p-1.5 bg-red/10 text-red border-none rounded-lg transition-colors hover:bg-red hover:text-light"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faTrash}
+                                    className="w-3 h-3"
+                                  />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </div>

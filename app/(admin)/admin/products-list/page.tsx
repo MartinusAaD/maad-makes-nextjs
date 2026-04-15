@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import NextImage from "next/image";
+import Link from "next/link";
 import { useProducts } from "@/context/ProductsContext";
 import {
   addDoc,
@@ -16,9 +17,16 @@ import { database } from "@/lib/firestoreConfig";
 import useDebounce from "@/hooks/useDebounce";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrash,
+  faMagnifyingGlass,
+  faPlus,
+  faXmark,
+  faCopy,
+  faPencil,
+  faTag,
+} from "@fortawesome/free-solid-svg-icons";
 import Button from "@/components/Button/Button";
-import ButtonSquare from "@/components/ButtonSquare/ButtonSquare";
 import { useImages } from "@/context/ImagesContext";
 import { isProductOnSale } from "@/utils/productHelpers";
 import AlertDialog from "@/components/AlertDialog/AlertDialog";
@@ -282,182 +290,295 @@ export default function ProductsListPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-white py-8 px-4 mx-auto">Loading...</div>
+      <div className="min-h-screen bg-bg-light flex items-center justify-center">
+        <p className="text-dark/40 text-sm">Loading products...</p>
+      </div>
     );
 
   return (
-    <div className="min-h-screen bg-bg-light py-8 px-4 mx-auto">
-      <ResponsiveWidthWrapper>
-        <div className="mb-8 flex gap-4 items-center flex-wrap">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 min-w-62.5 p-2 rounded border-2 border-primary/50 bg-white text-dark focus:outline-none focus:border-primary"
-          />
-
-          <select
-            value={filterBy}
-            onChange={(e) => setFilterBy(e.target.value as FilterBy)}
-            className="p-2 rounded border-2 border-primary/50 bg-white text-dark cursor-pointer hover:border-primary focus:border-primary focus:outline-none transition-colors"
-          >
-            <option value="all">All Products</option>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="on-sale">On Sale</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-
-        <div className="mb-8 p-4 bg-white shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded">
-          <div className="flex flex-col gap-4">
-            <button
-              onClick={handleDeleteSelected}
-              className="px-6 py-2 text-base border-none rounded font-bold bg-red text-light transition-colors hover:bg-red-darker"
+    <div className="w-full min-h-screen bg-bg-light">
+      {/* Page header */}
+      <div className="w-full bg-primary">
+        <ResponsiveWidthWrapper>
+          <div className="flex items-center justify-between py-6 gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-light tracking-tight">
+                Products
+              </h1>
+              <p className="text-light/50 text-sm mt-0.5">
+                {products.length} product{products.length !== 1 ? "s" : ""}{" "}
+                total
+              </p>
+            </div>
+            <Link
+              href="/admin/add-product"
+              className="flex items-center gap-2 px-4 py-2 bg-light/10 hover:bg-light/20 text-light rounded-lg border border-light/20 transition-colors text-sm font-medium shrink-0"
             >
-              Delete Selected ({selectedIds.size})
-            </button>
-            <div className="flex gap-4 items-center flex-wrap">
-              <input
-                type="datetime-local"
-                value={saleFromDate ?? ""}
-                onChange={(e) => setSaleFromDate(e.target.value)}
-                placeholder="Sale From"
-                className="p-2 rounded border-2 border-primary/50 flex-1 min-w-50 focus:outline-none focus:border-primary text-dark bg-white"
-              />
-              <span className="font-bold text-dark">to</span>
-              <input
-                type="datetime-local"
-                value={saleToDate ?? ""}
-                onChange={(e) => setSaleToDate(e.target.value)}
-                placeholder="Sale To"
-                className="p-2 rounded border-2 border-primary/50 flex-1 min-w-50 focus:outline-none focus:border-primary text-dark bg-white"
-              />
-              <button
-                onClick={handleSetSaleDate}
-                className="px-6 py-2 text-base border-none rounded font-bold bg-primary text-light transition-colors hover:bg-primary-lighter"
-              >
-                Set Sale for Selected
-              </button>
-            </div>
+              <FontAwesomeIcon icon={faPlus} className="w-3.5 h-3.5" />
+              Add Product
+            </Link>
           </div>
-        </div>
+        </ResponsiveWidthWrapper>
+      </div>
 
-        <div className="mt-8 border-2 border-primary/20 rounded shadow-[0_0_15px_rgba(0,0,0,0.1)]">
-          <div className="hidden md:grid grid-cols-[50px_80px_1fr_220px] gap-4 items-center p-4 bg-primary text-light rounded-t font-bold">
-            <div className="flex items-center justify-center">
-              <input
-                type="checkbox"
-                checked={
-                  selectedIds.size === filteredProducts.length &&
-                  filteredProducts.length > 0
-                }
-                onChange={(e) => handleSelectAll(e.target.checked)}
-                className="w-4.5 h-4.5"
+      <ResponsiveWidthWrapper>
+        <div className="w-full flex flex-col gap-4 py-8">
+          {/* Toolbar: search + filter */}
+          <div className="flex gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-56">
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 w-4 h-4 pointer-events-none"
               />
-            </div>
-            <div></div>
-            <div className="text-left">Products</div>
-            <div className="text-left">Actions</div>
-          </div>
-
-          <ul className="list-none p-0 m-0 bg-white rounded-b">
-            {displayedProducts.map((product: Product) => {
-              const thumbnailImage = imagesById.get(product.thumbnailId);
-              return (
-                <li
-                  key={product.id}
-                  className={`flex flex-col md:grid md:grid-cols-[50px_80px_1fr_220px] gap-4 items-center p-4 border-b border-primary/10 transition-colors last:border-b-0 hover:bg-bg-grey/30 cursor-pointer ${
-                    selectedIds.has(product.id) ? "bg-primary/10" : ""
-                  }`}
-                  onClick={() => handleEdit(product.id)}
-                  title={product.title}
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-10 p-2 rounded border-2 border-primary/50 bg-white text-dark focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dark/30 hover:text-dark/60 transition-colors"
+                  aria-label="Clear search"
                 >
-                  <div className="flex md:contents gap-4 items-center w-full md:w-auto">
-                    <div
-                      className="flex items-center justify-center"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.has(product.id)}
-                        onChange={(e) =>
-                          handleSelectProduct(product.id, e.target.checked)
-                        }
-                        className="w-4.5 h-4.5"
-                      />
-                    </div>
+                  <FontAwesomeIcon icon={faXmark} className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value as FilterBy)}
+              className="p-2 rounded border-2 border-primary/50 bg-white text-dark cursor-pointer hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+            >
+              <option value="all">All Products</option>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="on-sale">On Sale</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
 
-                    <div className="w-20 h-20 flex items-center justify-center rounded-xl overflow-hidden shrink-0">
-                      <NextImage
-                        src={
-                          thumbnailImage?.url || "/images/image-not-found.png"
-                        }
-                        alt={thumbnailImage?.alt || "No image available"}
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-contain rounded"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="min-w-0 flex flex-col gap-1 w-full md:w-auto">
-                    <h3 className="m-0 text-base font-semibold text-dark">
-                      {product.title}
-                    </h3>
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <span
-                        className={`px-2 py-1 rounded-xl text-xs font-semibold uppercase tracking-wide whitespace-nowrap ${
-                          product.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {product.isActive ? "Active" : "Inactive"}
-                      </span>
-                      <span className="px-2 py-1 rounded-xl text-xs font-semibold uppercase tracking-wide whitespace-nowrap bg-primary text-light">
-                        Stock: {product.stock || 0}
-                      </span>
-                      {isProductOnSale(product) && (
-                        <span className="px-2 py-1 rounded-xl text-xs font-semibold uppercase tracking-wide whitespace-nowrap bg-yellow text-dark">
-                          On Sale
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div
-                    className="flex gap-2 w-full md:w-auto pointer-events-none *:pointer-events-auto"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      onClick={() => handleDuplicate(product)}
-                      className="flex-1 md:flex-none px-4 py-2 text-sm bg-primary text-light border-none rounded font-bold transition-colors hover:bg-primary-lighter"
-                    >
-                      Duplicate
-                    </button>
-                    <ButtonSquare
-                      onClick={() => handleDeleteProduct(product)}
-                      className="bg-red hover:bg-red-darker"
-                    >
-                      <FontAwesomeIcon icon={faTrash} />
-                    </ButtonSquare>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-
-          {filteredProducts.length === 0 && (
-            <p className="py-12 text-center text-gray-400 text-xl bg-white border border-gray-300 rounded">
-              No products found
-            </p>
+          {/* Bulk actions panel — shown only when something is selected */}
+          {selectedIds.size > 0 && (
+            <div className="p-4 bg-white rounded-xl border-2 border-primary/20 shadow-sm flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <span className="text-sm font-semibold text-primary">
+                  {selectedIds.size} product
+                  {selectedIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <button
+                  onClick={handleDeleteSelected}
+                  className="flex items-center gap-2 px-4 py-1.5 text-sm border-none rounded-lg font-bold bg-red text-light transition-colors hover:bg-red-darker"
+                >
+                  <FontAwesomeIcon icon={faTrash} className="w-3.5 h-3.5" />
+                  Delete Selected
+                </button>
+              </div>
+              <div className="h-px bg-bg-grey" />
+              <div className="flex gap-3 items-center flex-wrap">
+                <FontAwesomeIcon
+                  icon={faTag}
+                  className="w-4 h-4 text-primary/50 shrink-0"
+                />
+                <input
+                  type="datetime-local"
+                  value={saleFromDate ?? ""}
+                  onChange={(e) => setSaleFromDate(e.target.value)}
+                  className="p-2 rounded border-2 border-primary/50 flex-1 min-w-44 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-dark bg-white text-sm transition-colors"
+                />
+                <span className="text-sm font-medium text-dark/50">to</span>
+                <input
+                  type="datetime-local"
+                  value={saleToDate ?? ""}
+                  onChange={(e) => setSaleToDate(e.target.value)}
+                  className="p-2 rounded border-2 border-primary/50 flex-1 min-w-44 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 text-dark bg-white text-sm transition-colors"
+                />
+                <button
+                  onClick={handleSetSaleDate}
+                  className="px-4 py-2 text-sm border-none rounded-lg font-bold bg-primary text-light transition-colors hover:bg-primary-lighter shrink-0"
+                >
+                  Set Sale Dates
+                </button>
+              </div>
+            </div>
           )}
 
+          {/* Products table */}
+          <div className="rounded-xl border border-bg-grey overflow-hidden bg-white shadow-sm">
+            {/* Table header */}
+            <div className="hidden md:grid grid-cols-[44px_72px_1fr_100px_180px] gap-4 items-center px-4 py-3 bg-primary text-light text-xs font-semibold uppercase tracking-wider">
+              <div className="flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedIds.size === filteredProducts.length &&
+                    filteredProducts.length > 0
+                  }
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  className="w-4 h-4 accent-light"
+                />
+              </div>
+              <div />
+              <div>Product</div>
+              <div>Price</div>
+              <div>Actions</div>
+            </div>
+
+            {/* Rows */}
+            {displayedProducts.length > 0 ? (
+              <ul className="list-none p-0 m-0 divide-y divide-bg-grey">
+                {displayedProducts.map((product: Product) => {
+                  const thumbnailImage = imagesById.get(
+                    product.thumbnailId ?? "",
+                  );
+                  const isSelected = selectedIds.has(product.id ?? "");
+                  return (
+                    <li
+                      key={product.id}
+                      className={`flex flex-col md:grid md:grid-cols-[44px_72px_1fr_100px_180px] gap-4 items-center px-4 py-3 transition-colors cursor-pointer hover:bg-bg-light/60 ${isSelected ? "bg-primary/5" : ""}`}
+                      onClick={() => handleEdit(product.id ?? "")}
+                      title={product.title}
+                    >
+                      {/* Checkbox */}
+                      <div
+                        className="flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) =>
+                            handleSelectProduct(
+                              product.id ?? "",
+                              e.target.checked,
+                            )
+                          }
+                          className="w-4 h-4 accent-primary"
+                        />
+                      </div>
+
+                      {/* Thumbnail */}
+                      <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-bg-grey">
+                        <NextImage
+                          src={
+                            thumbnailImage?.url || "/images/image-not-found.png"
+                          }
+                          alt={thumbnailImage?.alt || "No image available"}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+
+                      {/* Title + badges */}
+                      <div className="min-w-0 flex flex-col gap-1.5 w-full md:w-auto">
+                        <h3 className="text-sm font-semibold text-dark leading-snug line-clamp-2">
+                          {product.title}
+                        </h3>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide whitespace-nowrap ${
+                              product.isActive
+                                ? "bg-green/15 text-green-darker"
+                                : "bg-red/15 text-red-darker"
+                            }`}
+                          >
+                            {product.isActive ? "Active" : "Inactive"}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide whitespace-nowrap bg-primary/10 text-primary">
+                            Stock: {product.stock || 0}
+                          </span>
+                          {isProductOnSale(product) && (
+                            <span className="px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide whitespace-nowrap bg-yellow/20 text-yellow-darker">
+                              On Sale
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Price */}
+                      <div className="text-sm font-semibold text-dark w-full md:w-auto">
+                        {product.price != null
+                          ? `${Number(product.price).toFixed(2)} kr`
+                          : "—"}
+                        {isProductOnSale(product) &&
+                          product.priceOnSale != null && (
+                            <span className="block text-xs font-normal text-yellow-darker">
+                              Sale: {Number(product.priceOnSale).toFixed(2)} kr
+                            </span>
+                          )}
+                      </div>
+
+                      {/* Actions */}
+                      <div
+                        className="flex gap-2 w-full md:w-auto pointer-events-none *:pointer-events-auto"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => handleEdit(product.id ?? "")}
+                          className="flex items-center justify-center gap-1.5 shrink-0 px-3 py-1.5 text-xs bg-primary text-light border-none rounded-lg font-bold transition-colors hover:bg-primary-lighter"
+                          title="Edit product"
+                        >
+                          <FontAwesomeIcon
+                            icon={faPencil}
+                            className="w-3 h-3"
+                          />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDuplicate(product)}
+                          className="flex items-center justify-center gap-1.5 shrink-0 px-3 py-1.5 text-xs bg-primary/10 text-primary border-none rounded-lg font-bold transition-colors hover:bg-primary/20"
+                          title="Duplicate product"
+                        >
+                          <FontAwesomeIcon icon={faCopy} className="w-3 h-3" />
+                          Copy
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product)}
+                          className="flex items-center justify-center p-1.5 bg-red/10 text-red border-none rounded-lg font-bold transition-colors hover:bg-red hover:text-light"
+                          title="Delete product"
+                        >
+                          <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+                <div className="w-12 h-12 rounded-full bg-bg-grey flex items-center justify-center">
+                  <FontAwesomeIcon
+                    icon={faMagnifyingGlass}
+                    className="w-4 h-4 text-dark/25"
+                  />
+                </div>
+                <p className="text-dark/50 font-medium text-sm">
+                  {debouncedSearch
+                    ? `No products found for "${debouncedSearch}"`
+                    : "No products yet"}
+                </p>
+                {debouncedSearch && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="text-primary text-sm underline underline-offset-2 hover:text-primary-lighter transition-colors"
+                  >
+                    Clear search
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Load more */}
           {hasMoreProducts && (
-            <div className="flex justify-center mt-6">
-              <Button onClick={handleLoadMore}>
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-dark/40 text-sm">
+                Showing {displayedProducts.length} of {filteredProducts.length}
+              </p>
+              <Button onClick={handleLoadMore} className="max-w-xs">
                 Load More ({filteredProducts.length - displayLimit} remaining)
               </Button>
             </div>
