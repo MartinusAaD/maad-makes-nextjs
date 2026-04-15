@@ -224,6 +224,8 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (
         !orderData.isDemo &&
+        (orderData.isPaid === true ||
+          orderData.status === ORDER_STATUSES.COMPLETED) &&
         orderData.items &&
         Array.isArray(orderData.items)
       ) {
@@ -560,7 +562,11 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
       if (orderDoc.exists()) {
         const orderData = orderDoc.data() as Order;
 
+        // Only decrement unitsSold if NOT demo, and order was paid or completed (not cancelled)
         if (
+          !orderData.isDemo &&
+          (orderData.isPaid === true ||
+            orderData.status === ORDER_STATUSES.COMPLETED) &&
           orderData.status !== ORDER_STATUSES.CANCELLED &&
           orderData.items &&
           Array.isArray(orderData.items)
