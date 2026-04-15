@@ -1,9 +1,9 @@
 import "./globals.css";
 import localFont from "next/font/local";
 import Providers from "./providers";
-import Navbar from "@/components/Navbar/Navbar.old";
-import NavbarAdmin from "@/components/NavbarAdmin/NavbarAdmin.old";
-import Footer from "@/components/Footer/Footer.old";
+import Navbar from "@/components/Navbar/Navbar";
+import NavbarAdmin from "@/components/NavbarAdmin/NavbarAdmin";
+import Footer from "@/components/Footer/Footer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 

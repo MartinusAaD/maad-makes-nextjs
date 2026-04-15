@@ -20,7 +20,7 @@ import { useFilaments } from "@/context/FilamentsContext";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
-import PokemonType from "@/components/PokemonType/PokemonType.old";
+import PokemonType from "@/components/PokemonType/PokemonType";
 import Button from "@/components/Button/Button";
 import Alert from "@/components/Alert/Alert";
 import { isProductOnSale } from "@/utils/productHelpers";
