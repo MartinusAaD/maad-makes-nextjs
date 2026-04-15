@@ -45,9 +45,11 @@ interface CartFormData extends Record<string, unknown> {
   comment: string;
 }
 
+type AlertType = "info" | "success" | "error" | "warning";
+
 interface AlertState {
   alertMessage: string;
-  type: string;
+  type: AlertType;
 }
 
 export default function CartPage() {
@@ -161,10 +163,16 @@ export default function CartPage() {
               comment: "",
             });
           } else {
-            setFormValues((prev) => ({
-              ...prev,
+            setFormValues({
+              firstName: "",
+              lastName: "",
+              phone: "",
               email: currentUser.email || "",
-            }));
+              address: "",
+              city: "",
+              postalCode: "",
+              comment: "",
+            });
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -327,10 +335,7 @@ export default function CartPage() {
             <div className="space-y-4">
               {cartItems.map((item) => {
                 const image = getItemImage(item.thumbnailId);
-                const imgSrc =
-                  image?.url ||
-                  image?.downloadURL ||
-                  "/images/image-not-found.png";
+                const imgSrc = image?.url || "/images/image-not-found.png";
                 return (
                   <div
                     key={item.id}

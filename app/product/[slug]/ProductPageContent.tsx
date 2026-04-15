@@ -28,15 +28,13 @@ import { trackProductView } from "@/utils/analytics";
 
 interface AlertState {
   alertMessage: string;
-  type: string;
+  type: "info" | "success" | "error" | "warning";
 }
 
 interface OpenSections {
   general: boolean;
   pokemon: boolean;
-  ball: boolean;
   print: boolean;
-  filament: boolean;
 }
 
 export default function ProductPageContent() {
@@ -53,9 +51,7 @@ export default function ProductPageContent() {
   const [openSections, setOpenSections] = useState<OpenSections>({
     general: true,
     pokemon: false,
-    ball: false,
     print: false,
-    filament: false,
   });
 
   const toggleSection = (section: keyof OpenSections) =>
@@ -73,7 +69,7 @@ export default function ProductPageContent() {
   };
 
   useEffect(() => {
-    if (product) trackProductView(product.id, product.title, product.category);
+    if (product) trackProductView(product);
   }, [product]);
 
   const productImages = useMemo(() => {
@@ -262,16 +258,8 @@ export default function ProductPageContent() {
                   {product.sale?.from &&
                     product.sale?.to &&
                     (() => {
-                      const fromDate = new Date(
-                        product.sale.from.seconds
-                          ? product.sale.from.seconds * 1000
-                          : product.sale.from,
-                      );
-                      const toDate = new Date(
-                        product.sale.to.seconds
-                          ? product.sale.to.seconds * 1000
-                          : product.sale.to,
-                      );
+                      const fromDate = new Date(product.sale.from);
+                      const toDate = new Date(product.sale.to);
                       if (
                         isNaN(fromDate.getTime()) ||
                         isNaN(toDate.getTime())
@@ -404,8 +392,6 @@ export default function ProductPageContent() {
             product.size?.height ||
             product.size?.depth ||
             product.colors?.length > 0 ||
-            product.brand ||
-            product.manufacturer ||
             product.creatorManufacturer ||
             product.eanBarcode ||
             product.productCode) && (
@@ -468,26 +454,6 @@ export default function ProductPageContent() {
                         </span>
                         <span className="text-xl text-dark">
                           {product.colors.join(", ")}
-                        </span>
-                      </div>
-                    )}
-                    {product.brand && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Brand:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.brand}
-                        </span>
-                      </div>
-                    )}
-                    {product.manufacturer && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Manufacturer:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.manufacturer}
                         </span>
                       </div>
                     )}
@@ -671,120 +637,6 @@ export default function ProductPageContent() {
                         },
                       )}
                     </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {(product.ballData?.type || product.ballData?.diameter) && (
-            <div className="border border-bg-grey rounded mb-4 overflow-hidden">
-              <button
-                className="w-full flex justify-between items-center p-4 bg-primary border-none cursor-pointer text-xl font-bold text-light transition-colors hover:bg-primary-lighter"
-                onClick={() => toggleSection("ball")}
-              >
-                <span>Ball Information</span>
-                <FontAwesomeIcon
-                  icon={openSections.ball ? faChevronUp : faChevronDown}
-                />
-              </button>
-              {openSections.ball && (
-                <div className="p-4 bg-white">
-                  <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-                    {product.ballData.type && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Ball Type:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.ballData.type}
-                        </span>
-                      </div>
-                    )}
-                    {product.ballData.diameter && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Diameter:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.ballData.diameter}mm
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {(product.filamentData?.type ||
-            product.filamentData?.finish ||
-            product.filamentData?.diameter ||
-            product.filamentData?.printingTemp ||
-            product.filamentData?.dryingConditions) && (
-            <div className="border border-bg-grey rounded mb-4 overflow-hidden">
-              <button
-                className="w-full flex justify-between items-center p-4 bg-primary border-none cursor-pointer text-xl font-bold text-light transition-colors hover:bg-primary-lighter"
-                onClick={() => toggleSection("filament")}
-              >
-                <span>Filament Specifications</span>
-                <FontAwesomeIcon
-                  icon={openSections.filament ? faChevronUp : faChevronDown}
-                />
-              </button>
-              {openSections.filament && (
-                <div className="p-4 bg-white">
-                  <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4">
-                    {product.filamentData.type && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Filament Type:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.filamentData.type}
-                        </span>
-                      </div>
-                    )}
-                    {product.filamentData.finish && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Finish:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.filamentData.finish}
-                        </span>
-                      </div>
-                    )}
-                    {product.filamentData.diameter && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Diameter:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.filamentData.diameter}
-                        </span>
-                      </div>
-                    )}
-                    {product.filamentData.printingTemp && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Printing Temp:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.filamentData.printingTemp}
-                        </span>
-                      </div>
-                    )}
-                    {product.filamentData.dryingConditions && (
-                      <div className="flex flex-col gap-1">
-                        <span className="text-sm text-dark font-bold opacity-70">
-                          Drying Conditions:
-                        </span>
-                        <span className="text-xl text-dark">
-                          {product.filamentData.dryingConditions}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
               )}

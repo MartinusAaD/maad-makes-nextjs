@@ -36,9 +36,11 @@ import type { User } from "firebase/auth";
 import type { Image as ImageType } from "@/types/image";
 import type { Order } from "@/types/order";
 
+type AlertType = "info" | "success" | "error" | "warning";
+
 interface AlertState {
   alertMessage: string;
-  type: string;
+  type: AlertType;
 }
 
 interface ProfileData {
@@ -287,7 +289,7 @@ export default function ProfilePage() {
             {!currentUser?.emailVerified && (
               <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <svg
                       className="w-5 h-5 text-amber-600"
                       fill="currentColor"
@@ -310,7 +312,7 @@ export default function ProfilePage() {
                     <Button
                       onClick={handleResendVerification}
                       disabled={sendingVerification}
-                      className="mt-3 !bg-amber-600 hover:!bg-amber-700 !text-white"
+                      className="mt-3 bg-amber-600! hover:bg-amber-700! text-white!"
                     >
                       {sendingVerification
                         ? "Sending..."
@@ -486,19 +488,17 @@ export default function ProfilePage() {
                       e.preventDefault();
                       setIsEditing(true);
                     }}
-                    variant="primary"
                   >
                     Edit Profile
                   </Button>
                 ) : (
                   <>
-                    <Button type="submit" variant="primary" disabled={saving}>
+                    <Button type="submit" disabled={saving}>
                       {saving ? "Saving..." : "Save Changes"}
                     </Button>
                     <Button
                       type="button"
                       onClick={handleCancel}
-                      variant="secondary"
                       disabled={saving}
                     >
                       Cancel
@@ -615,7 +615,7 @@ function OrderHistoryContent({
     return orders
       .filter((order) => {
         if (customerNumber && order.customerNumber)
-          return order.customerNumber === customerNumber;
+          return String(order.customerNumber) === customerNumber;
         return order.customer?.email === currentUser.email;
       })
       .sort(

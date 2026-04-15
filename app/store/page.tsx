@@ -65,7 +65,7 @@ export default function StorePage() {
     if (q) {
       out = out.filter((p) => {
         const title = (p?.title || "").toString().toLowerCase();
-        const desc = (p?.description || "").toString().toLowerCase();
+        const desc = (p?.descriptionMarkdown || "").toString().toLowerCase();
         const keywords = Array.isArray(p?.searchKeywords)
           ? p.searchKeywords.join(" ").toLowerCase()
           : "";
