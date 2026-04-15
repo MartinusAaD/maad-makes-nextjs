@@ -146,7 +146,15 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Subscribe to all orders (only when user is authenticated)
   useEffect(() => {
+    let unsubscribeOrders: (() => void) | null = null;
+
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      // Always tear down the previous orders listener first
+      if (unsubscribeOrders) {
+        unsubscribeOrders();
+        unsubscribeOrders = null;
+      }
+
       if (!user) {
         setOrders([]);
         setLoading(false);
@@ -158,7 +166,7 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
         orderBy("createdAt", "desc"),
       );
 
-      const unsubscribe = onSnapshot(
+      unsubscribeOrders = onSnapshot(
         ordersQuery,
         (snapshot) => {
           const ordersData = snapshot.docs.map((doc) => ({
@@ -173,11 +181,12 @@ export const OrdersProvider = ({ children }: { children: React.ReactNode }) => {
           setLoading(false);
         },
       );
-
-      return () => unsubscribe();
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeOrders) unsubscribeOrders();
+    };
   }, []);
 
   // Create a new order
