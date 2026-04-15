@@ -12,16 +12,26 @@ import {
 } from "firebase/firestore";
 import { database } from "@/lib/firestoreConfig";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
-import Button from "@/components/Button/Button";
 import FormGroup from "@/components/Form/FormGroup";
 import FormLabel from "@/components/Form/FormLabel";
 import FormInput from "@/components/Form/FormInput";
 import FormSelect from "@/components/Form/FormSelect";
 import FormTextarea from "@/components/Form/FormTextarea";
-import FormFieldset from "@/components/Form/FormFieldset";
 import Alert from "@/components/Alert/Alert";
 import AlertDialog from "@/components/AlertDialog/AlertDialog";
 import useDebounce from "@/hooks/useDebounce";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPlus,
+  faXmark,
+  faPencil,
+  faTrash,
+  faCopy,
+  faMagnifyingGlass,
+  faBoxOpen,
+  faTriangleExclamation,
+  faArrowUpRightFromSquare,
+} from "@fortawesome/free-solid-svg-icons";
 import type { Filament, FilamentMaterial } from "@/types/filament";
 
 interface AlertState {
@@ -83,7 +93,7 @@ export default function FilamentsPage() {
   const [filterLowStock, setFilterLowStock] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [displayLimit, setDisplayLimit] = useState(10);
+  const [displayLimit, setDisplayLimit] = useState(20);
 
   const [formData, setFormData] = useState(defaultFormData);
 
@@ -105,9 +115,8 @@ export default function FilamentsPage() {
     "Other",
   ];
 
-  const formatNumber = (num: number): string => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  };
+  const formatNumber = (num: number): string =>
+    num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -126,7 +135,6 @@ export default function FilamentsPage() {
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!formData.brand.trim() || !formData.material.trim()) {
       setAlert({
         alertMessage: "Brand and Material are required!",
@@ -134,7 +142,6 @@ export default function FilamentsPage() {
       });
       return;
     }
-
     try {
       const filamentData = {
         name:
@@ -162,12 +169,10 @@ export default function FilamentsPage() {
         weightTotal: null as number | null,
         updatedAt: serverTimestamp(),
       };
-
       if (editingFilament) {
         const currentWeight = editingFilament.weightRemaining || 0;
         const newWeight = filamentData.weightRemaining || 0;
         const weightDifference = newWeight - currentWeight;
-
         if (
           editingFilament.weightTotal === undefined ||
           editingFilament.weightTotal === null
@@ -177,7 +182,6 @@ export default function FilamentsPage() {
           filamentData.weightTotal =
             editingFilament.weightTotal + Math.max(0, weightDifference);
         }
-
         await updateDoc(
           doc(database, "filaments", editingFilament.id),
           filamentData,
@@ -324,25 +328,22 @@ export default function FilamentsPage() {
 
   const displayedFilaments = filteredFilaments.slice(0, displayLimit);
   const hasMoreFilaments = filteredFilaments.length > displayLimit;
-
-  const handleLoadMore = () => {
-    setDisplayLimit((prev) => prev + 10);
-  };
+  const handleLoadMore = () => setDisplayLimit((prev) => prev + 20);
 
   const lowStockFilaments = filaments.filter(
     (f) => f.weightRemaining !== null && f.weightRemaining < 400,
   );
-
-  const totalWeightInStock = filaments.reduce((total, filament) => {
-    return total + (filament.weightRemaining || 0);
-  }, 0);
-
-  const totalWeightEver = filaments.reduce((total, filament) => {
-    return total + (filament.weightTotal || 0);
-  }, 0);
+  const totalWeightInStock = filaments.reduce(
+    (total, f) => total + (f.weightRemaining || 0),
+    0,
+  );
+  const totalWeightEver = filaments.reduce(
+    (total, f) => total + (f.weightTotal || 0),
+    0,
+  );
 
   return (
-    <div className="w-full flex flex-col items-center gap-4 bg-bg-light py-6 min-h-screen">
+    <div className="w-full min-h-screen bg-bg-light">
       {alert && (
         <Alert
           alertMessage={alert.alertMessage}
@@ -351,7 +352,6 @@ export default function FilamentsPage() {
           onClose={() => setAlert(null)}
         />
       )}
-
       {deleteDialog && (
         <AlertDialog
           title={deleteDialog.title}
@@ -361,526 +361,594 @@ export default function FilamentsPage() {
         />
       )}
 
-      <ResponsiveWidthWrapper>
-        <div className="w-full flex flex-col gap-6 mt-8">
-          <div className="flex flex-col gap-5 items-center">
-            <h1 className="text-4xl font-bold text-dark m-0">
-              Filament Inventory Manager
-            </h1>
-            <Button onClick={() => setShowForm(!showForm)}>
-              {showForm ? "Cancel" : "Add New Filament"}
-            </Button>
+      {/* Add / Edit modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex justify-center items-start bg-black/50 overflow-y-auto p-4 pt-12">
+          <div className="bg-white rounded-xl shadow-2xl border border-bg-grey w-full max-w-3xl mb-8">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-bg-grey">
+              <h2 className="text-base font-semibold text-dark">
+                {editingFilament ? "Edit Filament" : "Add New Filament"}
+              </h2>
+              <button
+                onClick={resetForm}
+                className="text-dark/40 hover:text-dark/70 transition-colors border-none bg-transparent cursor-pointer"
+                aria-label="Close"
+              >
+                <FontAwesomeIcon icon={faXmark} className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormGroup>
+                  <FormLabel htmlFor="name">Display Name</FormLabel>
+                  <FormInput
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Auto-generated if left empty"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="brand">Brand *</FormLabel>
+                  <FormSelect
+                    id="brand"
+                    name="brand"
+                    value={formData.brand}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="">Select brand</option>
+                    {brandOptions.map((brand) => (
+                      <option key={brand} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="material">Material *</FormLabel>
+                  <FormSelect
+                    id="material"
+                    name="material"
+                    value={formData.material}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    {materialTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="finish">Finish</FormLabel>
+                  <FormSelect
+                    id="finish"
+                    name="finish"
+                    value={formData.finish}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select finish (optional)</option>
+                    {[
+                      "Basic",
+                      "Matte",
+                      "Silk",
+                      "Translucent",
+                      "Metallic",
+                      "Glow in the Dark",
+                      "Wood",
+                      "Marble",
+                      "Other",
+                    ].map((f) => (
+                      <option key={f} value={f}>
+                        {f}
+                      </option>
+                    ))}
+                  </FormSelect>
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="color">Color</FormLabel>
+                  <FormInput
+                    type="text"
+                    id="color"
+                    name="color"
+                    value={formData.color}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Red, Blue, Black"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="hexColor">Hex Color</FormLabel>
+                  <div className="flex gap-2 items-center">
+                    <FormInput
+                      type="color"
+                      id="hexColor"
+                      name="hexColor"
+                      value={formData.hexColor}
+                      onChange={handleInputChange}
+                      className="h-10 w-16 p-1 cursor-pointer"
+                    />
+                    <FormInput
+                      type="text"
+                      value={formData.hexColor}
+                      onChange={handleInputChange}
+                      name="hexColor"
+                      placeholder="#000000"
+                    />
+                  </div>
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="diameter">Diameter (mm)</FormLabel>
+                  <FormSelect
+                    id="diameter"
+                    name="diameter"
+                    value={formData.diameter}
+                    onChange={handleInputChange}
+                  >
+                    <option value="1.75">1.75mm</option>
+                    <option value="2.85">2.85mm</option>
+                    <option value="3.0">3.0mm</option>
+                  </FormSelect>
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="settingsLink">Settings Link</FormLabel>
+                  <FormInput
+                    type="url"
+                    id="settingsLink"
+                    name="settingsLink"
+                    value={formData.settingsLink}
+                    onChange={handleInputChange}
+                    placeholder="https://..."
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="weightRemaining">
+                    Weight in Storage (g)
+                  </FormLabel>
+                  <FormInput
+                    type="number"
+                    id="weightRemaining"
+                    name="weightRemaining"
+                    value={formData.weightRemaining}
+                    onChange={handleInputChange}
+                    placeholder="800"
+                    min="0"
+                    step="1"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="weightTotal">
+                    Total Weight Ever (g)
+                  </FormLabel>
+                  <FormInput
+                    type="number"
+                    id="weightTotal"
+                    name="weightTotal"
+                    value={formData.weightTotal}
+                    onChange={handleInputChange}
+                    placeholder="Auto-calculated"
+                    min="0"
+                    step="1"
+                    disabled
+                    title="Auto-calculated based on weight added over time"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="gramsOrdered">Grams Ordered</FormLabel>
+                  <FormInput
+                    type="number"
+                    id="gramsOrdered"
+                    name="gramsOrdered"
+                    value={formData.gramsOrdered}
+                    onChange={handleInputChange}
+                    placeholder="Enter grams ordered"
+                    min="0"
+                    step="1"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="costPerKg">Cost per Kg (kr)</FormLabel>
+                  <FormInput
+                    type="number"
+                    id="costPerKg"
+                    name="costPerKg"
+                    value={formData.costPerKg}
+                    onChange={handleInputChange}
+                    placeholder="20.00"
+                    min="0"
+                    step="0.01"
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <FormLabel htmlFor="storageLocation">
+                    Storage Location
+                  </FormLabel>
+                  <FormInput
+                    type="text"
+                    id="storageLocation"
+                    name="storageLocation"
+                    value={formData.storageLocation}
+                    onChange={handleInputChange}
+                    placeholder="e.g. Shelf A, Box 3"
+                  />
+                </FormGroup>
+              </div>
+              <FormGroup className="mt-4">
+                <FormLabel htmlFor="notes">Notes</FormLabel>
+                <FormTextarea
+                  id="notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  placeholder="Any additional notes about this filament..."
+                  rows={3}
+                />
+              </FormGroup>
+              <div className="flex gap-2 pt-4 border-t border-bg-grey mt-4">
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 text-sm bg-primary text-light border-none rounded-lg font-bold transition-colors hover:bg-primary-lighter cursor-pointer"
+                >
+                  {editingFilament ? "Update Filament" : "Add Filament"}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-4 py-2 text-sm bg-bg-grey text-dark border-none rounded-lg font-bold transition-colors hover:bg-bg-grey/70 cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
+        </div>
+      )}
 
+      {/* Page header */}
+      <div className="w-full bg-primary">
+        <ResponsiveWidthWrapper>
+          <div className="flex items-center justify-between py-6 gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-light tracking-tight">
+                Filament Inventory
+              </h1>
+              <p className="text-light/50 text-sm mt-0.5">
+                {filaments.length} spool{filaments.length !== 1 ? "s" : ""} ·{" "}
+                {formatNumber(Math.round(totalWeightInStock))}g in stock
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                if (showForm) resetForm();
+                else setShowForm(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-light/10 hover:bg-light/20 text-light rounded-lg border border-light/20 transition-colors text-sm font-medium shrink-0 cursor-pointer"
+            >
+              <FontAwesomeIcon
+                icon={showForm ? faXmark : faPlus}
+                className="w-3.5 h-3.5"
+              />
+              {showForm ? "Cancel" : "Add Filament"}
+            </button>
+          </div>
+        </ResponsiveWidthWrapper>
+      </div>
+
+      <ResponsiveWidthWrapper>
+        <div className="w-full flex flex-col gap-6 py-8">
+          {/* Stats row */}
           {!loading && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white p-4 rounded-lg shadow-md text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-white rounded-xl border border-bg-grey p-4 text-center">
                 <p className="text-2xl font-bold text-primary">
                   {filaments.length}
                 </p>
-                <p className="text-sm text-gray-600">Total Filaments</p>
+                <p className="text-xs text-dark/50 mt-0.5">Total Spools</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-md text-center">
+              <div className="bg-white rounded-xl border border-bg-grey p-4 text-center">
                 <p className="text-2xl font-bold text-primary">
                   {formatNumber(Math.round(totalWeightInStock))}g
                 </p>
-                <p className="text-sm text-gray-600">Total Weight in Stock</p>
+                <p className="text-xs text-dark/50 mt-0.5">In Stock</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                <p className="text-2xl font-bold text-red-600">
+              <div
+                className={`rounded-xl border p-4 text-center ${lowStockFilaments.length > 0 ? "bg-red/5 border-red/20" : "bg-white border-bg-grey"}`}
+              >
+                <p
+                  className={`text-2xl font-bold ${lowStockFilaments.length > 0 ? "text-red" : "text-green"}`}
+                >
                   {lowStockFilaments.length}
                 </p>
-                <p className="text-sm text-gray-600">Low Stock (&lt;400g)</p>
+                <p className="text-xs text-dark/50 mt-0.5">
+                  Low Stock (&lt;400g)
+                </p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-md text-center">
-                <p className="text-2xl font-bold text-green-600">
+              <div className="bg-white rounded-xl border border-bg-grey p-4 text-center">
+                <p className="text-2xl font-bold text-green">
                   {formatNumber(Math.round(totalWeightEver))}g
                 </p>
-                <p className="text-sm text-gray-600">Total Weight Ever</p>
+                <p className="text-xs text-dark/50 mt-0.5">Total Ever Used</p>
               </div>
             </div>
           )}
 
-          {showForm && (
-            <div className="fixed inset-0 z-50 flex justify-center items-center bg-black/50 overflow-y-auto p-4">
-              <div className="bg-white rounded-lg shadow-2xl border-2 border-primary/40 w-full max-w-4xl my-8 max-h-[90vh] overflow-y-auto">
-                <form onSubmit={handleSubmit} className="p-6">
-                  <FormFieldset
-                    legend={
-                      editingFilament ? "Edit Filament" : "Add New Filament"
-                    }
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormGroup>
-                        <FormLabel htmlFor="name">Display Name:</FormLabel>
-                        <FormInput
-                          type="text"
-                          id="name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          placeholder="Auto-generated if left empty"
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="brand">Brand: *</FormLabel>
-                        <FormSelect
-                          id="brand"
-                          name="brand"
-                          value={formData.brand}
-                          onChange={handleInputChange}
-                          required
-                        >
-                          <option value="">Select brand</option>
-                          {brandOptions.map((brand) => (
-                            <option key={brand} value={brand}>
-                              {brand}
-                            </option>
-                          ))}
-                        </FormSelect>
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="material">Material: *</FormLabel>
-                        <FormSelect
-                          id="material"
-                          name="material"
-                          value={formData.material}
-                          onChange={handleInputChange}
-                          required
-                        >
-                          {materialTypes.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </FormSelect>
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="finish">Finish:</FormLabel>
-                        <FormSelect
-                          id="finish"
-                          name="finish"
-                          value={formData.finish}
-                          onChange={handleInputChange}
-                        >
-                          <option value="">Select finish (optional)</option>
-                          <option value="Basic">Basic</option>
-                          <option value="Matte">Matte</option>
-                          <option value="Silk">Silk</option>
-                          <option value="Translucent">Translucent</option>
-                          <option value="Metallic">Metallic</option>
-                          <option value="Glow in the Dark">
-                            Glow in the Dark
-                          </option>
-                          <option value="Wood">Wood</option>
-                          <option value="Marble">Marble</option>
-                          <option value="Other">Other</option>
-                        </FormSelect>
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="color">Color:</FormLabel>
-                        <FormInput
-                          type="text"
-                          id="color"
-                          name="color"
-                          value={formData.color}
-                          onChange={handleInputChange}
-                          placeholder="e.g., Red, Blue, Black"
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="hexColor">Hex Color:</FormLabel>
-                        <div className="flex gap-2 items-center">
-                          <FormInput
-                            type="color"
-                            id="hexColor"
-                            name="hexColor"
-                            value={formData.hexColor}
-                            onChange={handleInputChange}
-                            className="h-10 w-20"
-                          />
-                          <FormInput
-                            type="text"
-                            value={formData.hexColor}
-                            onChange={handleInputChange}
-                            name="hexColor"
-                            placeholder="#000000"
-                          />
-                        </div>
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="diameter">Diameter (mm):</FormLabel>
-                        <FormSelect
-                          id="diameter"
-                          name="diameter"
-                          value={formData.diameter}
-                          onChange={handleInputChange}
-                        >
-                          <option value="1.75">1.75mm</option>
-                          <option value="2.85">2.85mm</option>
-                          <option value="3.0">3.0mm</option>
-                        </FormSelect>
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="settingsLink">
-                          Settings Link:
-                        </FormLabel>
-                        <FormInput
-                          type="url"
-                          id="settingsLink"
-                          name="settingsLink"
-                          value={formData.settingsLink}
-                          onChange={handleInputChange}
-                          placeholder="https://..."
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="weightRemaining">
-                          Weight in Storage (g):
-                        </FormLabel>
-                        <FormInput
-                          type="number"
-                          id="weightRemaining"
-                          name="weightRemaining"
-                          value={formData.weightRemaining}
-                          onChange={handleInputChange}
-                          placeholder="800"
-                          min="0"
-                          step="1"
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="weightTotal">
-                          Total Weight Ever (g):
-                        </FormLabel>
-                        <FormInput
-                          type="number"
-                          id="weightTotal"
-                          name="weightTotal"
-                          value={formData.weightTotal}
-                          onChange={handleInputChange}
-                          placeholder="Auto-calculated"
-                          min="0"
-                          step="1"
-                          disabled
-                          className="bg-gray-100"
-                          title="This field is automatically calculated based on weight added over time"
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="gramsOrdered">
-                          Grams Ordered:
-                        </FormLabel>
-                        <FormInput
-                          type="number"
-                          id="gramsOrdered"
-                          name="gramsOrdered"
-                          value={formData.gramsOrdered}
-                          onChange={handleInputChange}
-                          placeholder="Enter grams ordered"
-                          min="0"
-                          step="1"
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="costPerKg">
-                          Cost per Kg (kr):
-                        </FormLabel>
-                        <FormInput
-                          type="number"
-                          id="costPerKg"
-                          name="costPerKg"
-                          value={formData.costPerKg}
-                          onChange={handleInputChange}
-                          placeholder="20.00"
-                          min="0"
-                          step="0.01"
-                        />
-                      </FormGroup>
-
-                      <FormGroup>
-                        <FormLabel htmlFor="storageLocation">
-                          Storage Location:
-                        </FormLabel>
-                        <FormInput
-                          type="text"
-                          id="storageLocation"
-                          name="storageLocation"
-                          value={formData.storageLocation}
-                          onChange={handleInputChange}
-                          placeholder="e.g., Shelf A, Box 3"
-                        />
-                      </FormGroup>
-                    </div>
-
-                    <FormGroup>
-                      <FormLabel htmlFor="notes">Notes:</FormLabel>
-                      <FormTextarea
-                        id="notes"
-                        name="notes"
-                        value={formData.notes}
-                        onChange={handleInputChange}
-                        placeholder="Any additional notes about this filament..."
-                        rows={3}
-                      />
-                    </FormGroup>
-
-                    <div className="flex gap-2">
-                      <Button onClick={resetForm} type="button">
-                        Cancel
-                      </Button>
-                      <Button type="submit">
-                        {editingFilament ? "Update Filament" : "Add Filament"}
-                      </Button>
-                    </div>
-                  </FormFieldset>
-                </form>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-bold text-dark mb-3">
-              Search & Filters
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormGroup>
-                <FormLabel htmlFor="filterBrand">Filter by Brand:</FormLabel>
-                <FormSelect
-                  id="filterBrand"
-                  value={filterBrand}
-                  onChange={(e) => setFilterBrand(e.target.value)}
-                >
-                  <option value="">All Brands</option>
-                  {uniqueBrands.map((brand) => (
-                    <option key={brand} value={brand}>
-                      {brand}
-                    </option>
-                  ))}
-                </FormSelect>
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel htmlFor="filterMaterial">
-                  Filter by Material:
-                </FormLabel>
-                <FormSelect
-                  id="filterMaterial"
-                  value={filterMaterial}
-                  onChange={(e) => setFilterMaterial(e.target.value)}
-                >
-                  <option value="">All Materials</option>
-                  {uniqueMaterials.map((material) => (
-                    <option key={material} value={material}>
-                      {material}
-                    </option>
-                  ))}
-                </FormSelect>
-              </FormGroup>
-
-              <FormGroup>
-                <FormLabel htmlFor="filterLowStock">Low Stock Only:</FormLabel>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="filterLowStock"
-                    checked={filterLowStock}
-                    onChange={(e) => setFilterLowStock(e.target.checked)}
-                    className="w-5 h-5 cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-600">
-                    Show only filaments with less than 400g remaining
-                  </span>
-                </div>
-              </FormGroup>
-            </div>
-
-            <FormGroup className="mt-4">
-              <FormLabel htmlFor="searchQuery">Search Filaments:</FormLabel>
-              <FormInput
+          {/* Search + filters */}
+          <div className="flex gap-3 flex-wrap">
+            <div className="relative flex-1 min-w-48">
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/40 w-4 h-4 pointer-events-none"
+              />
+              <input
                 type="text"
-                id="searchQuery"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, brand, color, or material..."
+                placeholder="Search by name, brand, color, material…"
+                className="w-full pl-10 pr-4 p-2 rounded border-2 border-primary/50 bg-white text-dark focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors text-sm"
               />
-            </FormGroup>
+            </div>
+            <select
+              value={filterBrand}
+              onChange={(e) => setFilterBrand(e.target.value)}
+              className="p-2 rounded border-2 border-primary/50 bg-white text-dark text-sm cursor-pointer hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+            >
+              <option value="">All Brands</option>
+              {uniqueBrands.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filterMaterial}
+              onChange={(e) => setFilterMaterial(e.target.value)}
+              className="p-2 rounded border-2 border-primary/50 bg-white text-dark text-sm cursor-pointer hover:border-primary focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+            >
+              <option value="">All Materials</option>
+              {uniqueMaterials.map((material) => (
+                <option key={material} value={material}>
+                  {material}
+                </option>
+              ))}
+            </select>
+            <label className="flex items-center gap-2 px-3 py-2 rounded border-2 border-primary/50 bg-white cursor-pointer hover:border-primary transition-colors text-sm font-medium text-dark">
+              <input
+                type="checkbox"
+                checked={filterLowStock}
+                onChange={(e) => setFilterLowStock(e.target.checked)}
+                className="accent-primary w-4 h-4"
+              />
+              Low stock only
+            </label>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-md border-2 border-primary/40">
-            <h2 className="text-2xl font-bold text-primary mb-4">
-              Filament Inventory ({filteredFilaments.length})
-            </h2>
+          {/* Filament list */}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <p className="text-dark/40 text-sm">Loading filaments...</p>
+            </div>
+          ) : filteredFilaments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-center bg-white rounded-xl border border-bg-grey">
+              <div className="w-12 h-12 rounded-full bg-bg-grey flex items-center justify-center">
+                <FontAwesomeIcon
+                  icon={faBoxOpen}
+                  className="w-5 h-5 text-dark/25"
+                />
+              </div>
+              <p className="text-dark/50 font-medium text-sm">
+                {filterBrand || filterMaterial || filterLowStock || searchQuery
+                  ? "No filaments match the current filters"
+                  : "No filaments yet"}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-2">
+                {displayedFilaments.map((filament) => {
+                  const isLowStock =
+                    filament.weightRemaining !== null &&
+                    filament.weightRemaining < 400;
+                  const weightPercent =
+                    filament.weightTotal && filament.weightTotal > 0
+                      ? Math.min(
+                          100,
+                          Math.round(
+                            ((filament.weightRemaining || 0) /
+                              filament.weightTotal) *
+                              100,
+                          ),
+                        )
+                      : null;
 
-            {loading ? (
-              <p>Loading filaments...</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {filteredFilaments.length === 0 ? (
-                  <p className="text-gray-500">
-                    {filterBrand || filterMaterial
-                      ? "No filaments match the selected filters."
-                      : "No filaments yet. Add your first filament!"}
-                  </p>
-                ) : (
-                  <>
-                    {displayedFilaments.map((filament) => {
-                      const isLowStock =
-                        filament.weightRemaining !== null &&
-                        filament.weightRemaining < 400;
-
-                      return (
+                  return (
+                    <div
+                      key={filament.id}
+                      className={`bg-white rounded-xl border flex flex-col gap-0 overflow-hidden ${isLowStock ? "border-red/30" : "border-bg-grey"}`}
+                    >
+                      {/* Main row */}
+                      <div className="flex items-center gap-3 px-4 py-3">
+                        {/* Color swatch */}
                         <div
-                          key={filament.id}
-                          className={`border rounded-lg p-4 ${
-                            isLowStock
-                              ? "border-red-500 bg-red-50"
-                              : "border-bg-grey"
-                          }`}
-                        >
-                          <div className="flex flex-col gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2 flex-wrap">
-                                <div
-                                  className="w-8 h-8 rounded border-2 border-gray-300 shrink-0"
-                                  style={{ backgroundColor: filament.hexColor }}
-                                  title={filament.hexColor}
+                          className="w-9 h-9 rounded-lg border border-black/10 shrink-0"
+                          style={{
+                            backgroundColor: filament.hexColor || "#ccc",
+                          }}
+                          title={filament.hexColor}
+                        />
+
+                        {/* Name + brand/material */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold text-dark">
+                              {filament.name}
+                            </span>
+                            {isLowStock && (
+                              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold bg-red/10 text-red whitespace-nowrap shrink-0">
+                                <FontAwesomeIcon
+                                  icon={faTriangleExclamation}
+                                  className="w-2.5 h-2.5"
                                 />
-                                <h3 className="text-lg md:text-xl font-bold text-dark m-0">
-                                  {filament.name}
-                                </h3>
-                                {isLowStock && (
-                                  <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">
-                                    LOW STOCK
-                                  </span>
-                                )}
-                              </div>
+                                Low stock
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-dark/40 mt-0.5">
+                            {filament.brand}
+                            {filament.material ? ` · ${filament.material}` : ""}
+                            {filament.finish ? ` · ${filament.finish}` : ""}
+                            {filament.diameter
+                              ? ` · ${filament.diameter}mm`
+                              : ""}
+                          </p>
+                        </div>
 
-                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                                <p>
-                                  <span className="font-bold">Brand:</span>{" "}
-                                  {filament.brand}
-                                </p>
-                                <p>
-                                  <span className="font-bold">Material:</span>{" "}
-                                  {filament.material}
-                                </p>
-                                {filament.finish && (
-                                  <p>
-                                    <span className="font-bold">Finish:</span>{" "}
-                                    {filament.finish}
-                                  </p>
-                                )}
-                                <p>
-                                  <span className="font-bold">Color:</span>{" "}
-                                  {filament.color || "N/A"}
-                                </p>
-                                <p>
-                                  <span className="font-bold">Diameter:</span>{" "}
-                                  {filament.diameter}mm
-                                </p>
-                                {filament.weightRemaining !== null && (
-                                  <p>
-                                    <span className="font-bold">
-                                      Weight in Storage:
-                                    </span>{" "}
-                                    {filament.weightRemaining}g
-                                  </p>
-                                )}
-                                {filament.weightTotal !== null &&
-                                  filament.weightTotal !== undefined && (
-                                    <p>
-                                      <span className="font-bold">
-                                        Total Ever:
-                                      </span>{" "}
-                                      <span className="text-green-600 font-semibold">
-                                        {filament.weightTotal}g
-                                      </span>
-                                    </p>
-                                  )}
-                                {filament.gramsOrdered !== null &&
-                                  !isNaN(filament.gramsOrdered) && (
-                                    <p>
-                                      <span className="font-bold">
-                                        Ordered:
-                                      </span>{" "}
-                                      <span className="text-blue-600 font-semibold">
-                                        {filament.gramsOrdered}g
-                                      </span>
-                                    </p>
-                                  )}
-                                {filament.settingsLink && (
-                                  <p>
-                                    <span className="font-bold">Settings:</span>{" "}
-                                    <a
-                                      href={filament.settingsLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline"
-                                    >
-                                      View Recommended Settings
-                                    </a>
-                                  </p>
-                                )}
-                                {filament.storageLocation && (
-                                  <p>
-                                    <span className="font-bold">Location:</span>{" "}
-                                    {filament.storageLocation}
-                                  </p>
-                                )}
-                              </div>
+                        {/* Weight summary */}
+                        <div className="hidden sm:flex flex-col items-end gap-0.5 shrink-0 w-28 text-right">
+                          {filament.weightRemaining !== null ? (
+                            <>
+                              <span className="text-sm font-semibold text-dark">
+                                {filament.weightRemaining}g
+                              </span>
+                              <span className="text-xs text-dark/40">
+                                {filament.weightTotal
+                                  ? `of ${filament.weightTotal}g`
+                                  : "remaining"}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-xs text-dark/25 italic">
+                              No weight
+                            </span>
+                          )}
+                        </div>
 
-                              {filament.notes && (
-                                <p className="text-sm text-gray-600 mt-2">
-                                  <span className="font-bold">Notes:</span>{" "}
-                                  {filament.notes}
-                                </p>
+                        {/* Actions */}
+                        <div className="flex gap-1.5 shrink-0 ml-1">
+                          <button
+                            onClick={() => handleEdit(filament)}
+                            className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none cursor-pointer"
+                            title="Edit"
+                          >
+                            <FontAwesomeIcon
+                              icon={faPencil}
+                              className="w-3 h-3"
+                            />
+                          </button>
+                          <button
+                            onClick={() => handleDuplicate(filament)}
+                            className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors border-none cursor-pointer"
+                            title="Duplicate"
+                          >
+                            <FontAwesomeIcon
+                              icon={faCopy}
+                              className="w-3 h-3"
+                            />
+                          </button>
+                          {filament.settingsLink && (
+                            <a
+                              href={filament.settingsLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                              title="Slicer settings"
+                            >
+                              <FontAwesomeIcon
+                                icon={faArrowUpRightFromSquare}
+                                className="w-3 h-3"
+                              />
+                            </a>
+                          )}
+                          <button
+                            onClick={() => confirmDelete(filament)}
+                            className="flex items-center justify-center w-8 h-8 rounded-lg bg-red/10 text-red hover:bg-red hover:text-light transition-colors border-none cursor-pointer"
+                            title="Delete"
+                          >
+                            <FontAwesomeIcon
+                              icon={faTrash}
+                              className="w-3 h-3"
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Weight bar + extra details strip */}
+                      {(weightPercent !== null ||
+                        filament.storageLocation ||
+                        filament.costPerKg != null ||
+                        filament.notes) && (
+                        <div className="border-t border-bg-grey px-4 py-2 flex flex-col gap-1.5">
+                          {weightPercent !== null && (
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 h-1.5 bg-bg-grey rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full ${weightPercent < 30 ? "bg-red" : weightPercent < 60 ? "bg-yellow" : "bg-green"}`}
+                                  style={{ width: `${weightPercent}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-dark/40 shrink-0">
+                                {weightPercent}% remaining
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-dark/50">
+                            {filament.storageLocation && (
+                              <span>
+                                <span className="text-dark/30">Location:</span>{" "}
+                                {filament.storageLocation}
+                              </span>
+                            )}
+                            {filament.costPerKg != null && (
+                              <span>
+                                <span className="text-dark/30">Cost:</span>{" "}
+                                {filament.costPerKg} kr/kg
+                              </span>
+                            )}
+                            {filament.gramsOrdered != null &&
+                              !isNaN(filament.gramsOrdered) && (
+                                <span>
+                                  <span className="text-dark/30">Ordered:</span>{" "}
+                                  {filament.gramsOrdered}g
+                                </span>
                               )}
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-gray-200">
-                              <Button onClick={() => handleEdit(filament)}>
-                                Edit
-                              </Button>
-                              <Button onClick={() => handleDuplicate(filament)}>
-                                Duplicate
-                              </Button>
-                              <Button
-                                onClick={() => confirmDelete(filament)}
-                                className="bg-red-500 hover:bg-red-600 text-white border-none"
-                              >
-                                Delete
-                              </Button>
-                            </div>
+                            {filament.color && (
+                              <span>
+                                <span className="text-dark/30">Color:</span>{" "}
+                                {filament.color}
+                              </span>
+                            )}
+                            {filament.notes && (
+                              <span className="italic text-dark/40">
+                                {filament.notes}
+                              </span>
+                            )}
                           </div>
                         </div>
-                      );
-                    })}
-
-                    {hasMoreFilaments && (
-                      <div className="flex justify-center mt-4">
-                        <Button onClick={handleLoadMore}>
-                          Load More ({filteredFilaments.length - displayLimit}{" "}
-                          remaining)
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
+
+              {hasMoreFilaments && (
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-dark/40 text-sm">
+                    Showing {displayedFilaments.length} of{" "}
+                    {filteredFilaments.length}
+                  </p>
+                  <button
+                    onClick={handleLoadMore}
+                    className="px-6 py-2 text-sm bg-primary text-light border-none rounded-lg font-bold transition-colors hover:bg-primary-lighter cursor-pointer"
+                  >
+                    Load More ({filteredFilaments.length - displayLimit}{" "}
+                    remaining)
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </ResponsiveWidthWrapper>
     </div>
