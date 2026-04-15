@@ -199,7 +199,7 @@ export default function ContactPage() {
                   <FormError error={errors.subject} />
                 </FormGroup>
 
-                {formData.subject === "order" && (
+                {formData.subject === "orderHelp" && (
                   <FormGroup>
                     <FormLabel htmlFor="orderNumber">
                       Order Number (Optional):
