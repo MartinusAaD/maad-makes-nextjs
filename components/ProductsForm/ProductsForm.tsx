@@ -23,17 +23,13 @@ import Button from "@/components/Button/Button";
 import { useImages } from "@/context/ImagesContext";
 import CategoryList from "@/components/CategoryList/CategoryList";
 import { useProducts } from "@/context/ProductsContext";
-import ButtonSquare from "@/components/ButtonSquare/ButtonSquare";
 import ResponsiveWidthWrapper from "@/components/ResponsiveWidthWrapper/ResponsiveWidthWrapper";
 import useImageSearch from "@/hooks/useImageSearch";
 import useVariantSearch from "@/hooks/useVariantSearch";
-import FormGroup from "@/components/Form/FormGroup";
-import FormLabel from "@/components/Form/FormLabel";
 import FormInput from "@/components/Form/FormInput";
 import FormTextarea from "@/components/Form/FormTextarea";
-import FormSelect from "@/components/Form/FormSelect";
-import FormFieldset from "@/components/Form/FormFieldset";
 import Alert from "@/components/Alert/Alert";
+import { SectionCard, FieldLabel } from "./SectionCard";
 import type { Product } from "@/types/product";
 
 interface ImagePreview {
@@ -42,6 +38,48 @@ interface ImagePreview {
   alt: string;
   url: string;
 }
+
+// ─── toggle-switch helper ─────────────────────────────────────────────────────
+const Toggle = ({
+  id,
+  name,
+  checked,
+  label,
+  sub,
+  color = "bg-primary",
+  onChange,
+}: {
+  id: string;
+  name: string;
+  checked: boolean;
+  label: string;
+  sub: string;
+  color?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
+  <label className="flex items-center gap-3 cursor-pointer select-none">
+    <div className="relative shrink-0">
+      <input
+        type="checkbox"
+        className="sr-only"
+        id={id}
+        name={name}
+        checked={checked}
+        onChange={onChange}
+      />
+      <div
+        className={`w-11 h-6 rounded-full transition-colors duration-200 ${checked ? color : "bg-gray-200"}`}
+      />
+      <div
+        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${checked ? "translate-x-5" : "translate-x-0"}`}
+      />
+    </div>
+    <div>
+      <p className="text-sm font-semibold text-dark leading-tight">{label}</p>
+      <p className="text-xs text-dark/45 leading-tight">{sub}</p>
+    </div>
+  </label>
+);
 
 const ProductsForm = () => {
   const { id } = useParams();
@@ -513,152 +551,119 @@ const ProductsForm = () => {
   return (
     <ResponsiveWidthWrapper classNameWrapper={"bg-bg-light"}>
       <form
-        className="w-full flex flex-col justify-center items-center py-8 gap-8"
+        className="w-full max-w-3xl mx-auto flex flex-col py-10 gap-6"
         onSubmit={handleSubmit}
       >
-        <h1 className="text-4xl font-bold">
-          {inEditMode ? "Update Product" : "Add Product"}
-        </h1>
+        {/* ── Page Header ─────────────────────────────────────────────────── */}
+        <div className="pb-4 border-b-2 border-primary/20">
+          <h1 className="text-3xl font-black text-primary tracking-tight">
+            {inEditMode ? "Edit Product" : "New Product"}
+          </h1>
+          <p className="mt-1 text-sm text-dark/45">
+            Fill in each section — all changes are saved when you submit.
+          </p>
+        </div>
 
-        <FormFieldset legend={"Tools"}>
-          {/* Tools, isActive, isFeatured */}
-          <div className="w-full flex flex-col gap-4">
-            <div className="w-full flex flex-col flex-wrap gap-8">
-              {/* isActive */}
-              <div className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  name="isActive"
-                  className="w-6 h-6 accent-primary"
-                  checked={formData.isActive}
-                  onChange={handleChange}
-                  title="Check if product is active"
-                />
-                <label
-                  htmlFor="isActive"
-                  className="font-bold"
-                  title="Check if product is active"
-                >
-                  Check if Active
-                </label>
-              </div>
+        {/* ── 1. Status & Visibility ──────────────────────────────────────── */}
+        <SectionCard step={1} title="Status & Visibility">
+          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:gap-8">
+            <Toggle
+              id="isActive"
+              name="isActive"
+              checked={formData.isActive}
+              label="Active"
+              sub="Visible in the store"
+              onChange={handleChange}
+            />
+            <Toggle
+              id="isFeatured"
+              name="isFeatured"
+              checked={formData.isFeatured}
+              label="Featured"
+              sub="Shown on the homepage"
+              onChange={handleChange}
+            />
+            <Toggle
+              id="isTempFill"
+              name="isTempFill"
+              checked={formData.isTempFill || false}
+              label="Temp Fill"
+              sub="Orders only — hidden from store"
+              color="bg-yellow-400"
+              onChange={handleChange}
+            />
+          </div>
 
-              {/* isFeatured */}
-              <div className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  id="isFeatured"
-                  name="isFeatured"
-                  className="w-6 h-6 accent-primary"
-                  checked={formData.isFeatured}
-                  onChange={handleChange}
-                  title="Check if product is featured"
-                />
-                <label
-                  htmlFor="isFeatured"
-                  className="font-bold"
-                  title="Check if product is featured"
-                >
-                  Check if Featured
-                </label>
-              </div>
-
-              {/* isTempFill */}
-              <div className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  id="isTempFill"
-                  name="isTempFill"
-                  className="w-6 h-6 accent-yellow-500"
-                  checked={formData.isTempFill || false}
-                  onChange={handleChange}
-                  title="Temporary fill product — hidden from store and home, only usable in orders"
-                />
-                <label
-                  htmlFor="isTempFill"
-                  className="font-bold"
-                  title="Temporary fill product — hidden from store and home, only usable in orders"
-                >
-                  Temporary Fill Product
-                </label>
-              </div>
-            </div>
-
-            {/* Sale date range - always visible */}
-            <div className="w-full flex flex-col gap-1">
-              <label htmlFor="sale.from" className="font-bold">
-                On Sale Period (optional):
-              </label>
-              <div className="flex justify-between gap-2">
+          {/* Sale Period */}
+          <div className="flex flex-col gap-2">
+            <FieldLabel>
+              Sale Period{" "}
+              <span className="font-normal normal-case">(optional)</span>
+            </FieldLabel>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-dark/40">From</span>
                 <input
                   type="datetime-local"
                   id="sale.from"
                   name="sale.from"
-                  className="w-full p-2 rounded border-2 border-primary/50"
+                  className="w-full px-3 py-2 text-sm rounded-lg border-2 border-primary/20 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   value={formData.sale?.from || ""}
                   onChange={handleChange}
-                  placeholder="Start date"
                 />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-dark/40">To</span>
                 <input
                   type="datetime-local"
                   id="sale.to"
                   name="sale.to"
-                  className="w-full p-2 rounded border-2 border-primary/50"
+                  className="w-full px-3 py-2 text-sm rounded-lg border-2 border-primary/20 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   value={formData.sale?.to || ""}
                   onChange={handleChange}
-                  placeholder="End date"
                 />
               </div>
             </div>
           </div>
-        </FormFieldset>
+        </SectionCard>
 
-        <FormFieldset legend="General Data">
+        {/* ── 2. Basic Info ───────────────────────────────────────────────── */}
+        <SectionCard step={2} title="Basic Info">
           {/* Title */}
-          <FormGroup>
-            <FormLabel htmlFor="title" title="Enter the products title">
-              Title:
-            </FormLabel>
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="title">Title</FieldLabel>
             <FormInput
               type="text"
               id="title"
               name="title"
               value={formData.title}
               onChange={handleChange}
-              title="Enter the products title"
               placeholder="#0001 | Bulbasaur - N3D Ball"
             />
-          </FormGroup>
+          </div>
 
           {/* Slug */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="slug"
-              title="The slug is the part of the url specific for this product"
-            >
-              Slug:
-            </FormLabel>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <FieldLabel htmlFor="slug">Slug</FieldLabel>
+              <span className="text-xs bg-gray-100 text-dark/40 px-2 py-0.5 rounded-full font-normal normal-case">
+                auto-generated
+              </span>
+            </div>
             <FormInput
               type="text"
               id="slug"
               name="slug"
               value={formData.slug}
               onChange={handleChange}
-              title="The slug is the part of the url specific for this product"
-              placeholder="Auto-generated based on the title"
+              placeholder="auto-generated from title"
               disabled
             />
-          </FormGroup>
+          </div>
 
           {/* Categories */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="categories"
-              title="Enter the categories of the product"
-            >
-              Categories:
-            </FormLabel>
+          <div className="flex flex-col gap-2">
+            <FieldLabel>Categories</FieldLabel>
             <div>
               <Button onClick={() => setShowCategoriesModal(true)}>
                 Select Categories
@@ -675,616 +680,570 @@ const ProductsForm = () => {
                   setShowModal={setShowCategoriesModal}
                 />
               )}
-              {/* Display selected category names as pills */}
               {formData.categories?.length > 0 && (
-                <div className="mt-2 flex items-center gap-2 flex-wrap">
-                  Selected:
+                <div className="mt-3 flex items-center gap-2 flex-wrap">
                   {formData.categories.map((catId) => {
                     const cat = categories.find((c) => c.id === catId);
                     if (!cat) return null;
-
-                    // Find parent category if this is a subcategory
                     const parent = cat.parentId
                       ? categories.find((c) => c.id === cat.parentId)
                       : null;
-
                     return (
                       <span
                         key={catId}
-                        className="bg-blue-100 text-primary px-2 py-1 rounded-full text-sm"
+                        className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-semibold"
                       >
-                        {parent ? `${parent.name} > ${cat.name}` : cat.name}
+                        {parent ? `${parent.name} › ${cat.name}` : cat.name}
                       </span>
                     );
                   })}
                 </div>
               )}
             </div>
-          </FormGroup>
+          </div>
+        </SectionCard>
 
-          {/* Price */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="price"
-              title="The Price the product is being sold for"
-            >
-              Price: {"(kr)"}
-            </FormLabel>
-            <FormInput
-              type="number"
-              id="price"
-              name="price"
-              value={formData.price}
-              onChange={handleChange}
-              title="The Price the product is being sold for"
-              placeholder="0"
-              min={0}
-            />
-          </FormGroup>
-
-          {/* Price on Sale */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="priceOnSale"
-              title="The Price the product will be sold for on Sale"
-            >
-              Price on Sale: {"(kr)"}
-            </FormLabel>
-            <FormInput
-              type="number"
-              id="priceOnSale"
-              name="priceOnSale"
-              value={formData.priceOnSale}
-              onChange={handleChange}
-              title="The Price the product will be sold for on Sale"
-              placeholder="0"
-              min={0}
-            />
-          </FormGroup>
-
-          {/* Cost Price */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="costPrice"
-              title="The Cost to create or buy the product for the seller"
-            >
-              Cost Price: {"(kr)"}
-            </FormLabel>
-            <FormInput
-              type="number"
-              id="costPrice"
-              name="costPrice"
-              value={formData.costPrice}
-              onChange={handleChange}
-              title="The Cost to create or buy the product for the seller"
-              placeholder="0"
-              step="0.1"
-              min={0}
-            />
-          </FormGroup>
-
-          {/* Stock */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="stock"
-              title="The amount of product on hand right now, or amount of grams if filament"
-            >
-              Stock:
-            </FormLabel>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="w-1/2 p-1 rounded border-2 border-primary/30 text-light font-bold bg-primary hover:bg-primary-lighter active:[&>svg]:scale-85"
-                onClick={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    stock: Math.max((prev.stock || 0) - 1, 0),
-                  }))
-                }
-              >
-                <FontAwesomeIcon icon={faMinus} />
-              </button>
+        {/* ── 3. Pricing ──────────────────────────────────────────────────── */}
+        <SectionCard step={3} title="Pricing">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="price">
+                Price <span className="font-normal normal-case">(kr)</span>
+              </FieldLabel>
               <FormInput
                 type="number"
-                id="stock"
-                name="stock"
-                className="text-center"
-                value={formData.stock}
+                id="price"
+                name="price"
+                value={formData.price}
                 onChange={handleChange}
-                title="The amount of product on hand right now, or amount of grams if filament"
                 placeholder="0"
                 min={0}
               />
-              <button
-                type="button"
-                className="w-1/2 p-1 rounded border-2 border-primary/30 text-light font-bold bg-primary hover:bg-primary-lighter active:[&>svg]:scale-85"
-                onClick={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    stock: (prev.stock || 0) + 1,
-                  }))
-                }
-              >
-                <FontAwesomeIcon icon={faPlus} />
-              </button>
             </div>
-          </FormGroup>
-
-          {/* Units Sold */}
-          <FormGroup>
-            <FormLabel htmlFor="unitsSold" title="The amount of product sold!">
-              Units Sold:
-            </FormLabel>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="w-1/2 p-1 rounded border-2 border-primary/30 text-light font-bold bg-primary hover:bg-primary-lighter active:[&>svg]:scale-85"
-                onClick={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    unitsSold: Math.max((prev.unitsSold || 0) - 1, 0),
-                  }))
-                }
-              >
-                <FontAwesomeIcon icon={faMinus} />
-              </button>
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="priceOnSale">
+                Sale Price <span className="font-normal normal-case">(kr)</span>
+              </FieldLabel>
               <FormInput
                 type="number"
-                id="unitsSold"
-                name="unitsSold"
-                className="text-center"
-                value={formData.unitsSold}
+                id="priceOnSale"
+                name="priceOnSale"
+                value={formData.priceOnSale}
                 onChange={handleChange}
-                title="The amount of product sold!"
                 placeholder="0"
                 min={0}
               />
-              <button
-                type="button"
-                className="w-1/2 p-1 rounded border-2 border-primary/30 text-light font-bold bg-primary hover:bg-primary-lighter active:[&>svg]:scale-85"
-                onClick={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    unitsSold: (prev.unitsSold || 0) + 1,
-                  }))
-                }
-              >
-                <FontAwesomeIcon icon={faPlus} />
-              </button>
             </div>
-          </FormGroup>
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="costPrice">
+                Cost Price <span className="font-normal normal-case">(kr)</span>
+              </FieldLabel>
+              <FormInput
+                type="number"
+                id="costPrice"
+                name="costPrice"
+                value={formData.costPrice}
+                onChange={handleChange}
+                placeholder="0"
+                step="0.1"
+                min={0}
+              />
+            </div>
+          </div>
+        </SectionCard>
 
-          {/* Description Markdown */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="descriptionMarkdown"
-              title="Enter the products description here with the MarkDown markup language!"
-            >
-              Description:
-            </FormLabel>
+        {/* ── 4. Inventory ────────────────────────────────────────────────── */}
+        <SectionCard step={4} title="Inventory">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* Stock */}
+            <div className="flex flex-col gap-1">
+              <FieldLabel>Stock</FieldLabel>
+              <div className="flex rounded-lg overflow-hidden border-2 border-primary/30">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-primary text-white hover:bg-primary-lighter transition-colors"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      stock: Math.max((prev.stock || 0) - 1, 0),
+                    }))
+                  }
+                >
+                  <FontAwesomeIcon icon={faMinus} className="w-3 h-3" />
+                </button>
+                <input
+                  type="number"
+                  id="stock"
+                  name="stock"
+                  className="flex-1 text-center py-2 px-3 border-x-2 border-primary/20 bg-white focus:outline-none"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  placeholder="0"
+                  min={0}
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-primary text-white hover:bg-primary-lighter transition-colors"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      stock: (prev.stock || 0) + 1,
+                    }))
+                  }
+                >
+                  <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* Units Sold */}
+            <div className="flex flex-col gap-1">
+              <FieldLabel>Units Sold</FieldLabel>
+              <div className="flex rounded-lg overflow-hidden border-2 border-primary/30">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-primary text-white hover:bg-primary-lighter transition-colors"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      unitsSold: Math.max((prev.unitsSold || 0) - 1, 0),
+                    }))
+                  }
+                >
+                  <FontAwesomeIcon icon={faMinus} className="w-3 h-3" />
+                </button>
+                <input
+                  type="number"
+                  id="unitsSold"
+                  name="unitsSold"
+                  className="flex-1 text-center py-2 px-3 border-x-2 border-primary/20 bg-white focus:outline-none"
+                  value={formData.unitsSold}
+                  onChange={handleChange}
+                  placeholder="0"
+                  min={0}
+                />
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-primary text-white hover:bg-primary-lighter transition-colors"
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      unitsSold: (prev.unitsSold || 0) + 1,
+                    }))
+                  }
+                >
+                  <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* ── 5. Description ──────────────────────────────────────────────── */}
+        <SectionCard step={5} title="Description">
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="descriptionMarkdown">
+              Content{" "}
+              <span className="font-normal normal-case">(Markdown)</span>
+            </FieldLabel>
             <FormTextarea
               name="descriptionMarkdown"
               id="descriptionMarkdown"
               value={formData.descriptionMarkdown}
               onChange={handleChange}
-              title="Enter the products description here with the MarkDown markup language!"
               rows={20}
             />
-          </FormGroup>
+          </div>
+        </SectionCard>
 
-          {/* Thumbnail Image */}
-          <FormGroup>
-            <FormLabel htmlFor="thumbnailImageUrl">Thumbnail Image:</FormLabel>
-
-            <FormInput
-              type="text"
-              id="thumbnailImageUrl"
-              name="thumbnailImageUrl"
-              value={thumbnailQuery}
-              onChange={(e) => setThumbnailQuery(e.target.value)}
-              title="Uploaded image is the main image of the product"
-              placeholder="Search for Thumbnail Image"
-            />
-
-            {thumbnailQuery && (
-              <ul className="flex flex-col gap-2 max-h-85 overflow-y-auto p-2 bg-light border-2 border-primary/20 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded">
-                {thumbnailImagesDropdownList.map((image) => (
-                  <li
-                    key={image.id}
-                    onClick={() => handleSetThumbnailPreview(image)}
-                    className="flex items-center gap-4 rounded p-2 hover:bg-primary/10 cursor-pointer"
-                  >
-                    <Image
-                      src={image.url}
-                      alt={image.alt}
-                      width={100}
-                      height={100}
-                      className="max-w-25 h-auto rounded"
-                      onError={handleImgError}
-                    />
-                    <p>{image.title}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-
+        {/* ── 6. Media ────────────────────────────────────────────────────── */}
+        <SectionCard step={6} title="Media">
+          {/* Thumbnail */}
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="thumbnailImageUrl">Thumbnail Image</FieldLabel>
+            <div className="relative">
+              <FormInput
+                type="text"
+                id="thumbnailImageUrl"
+                name="thumbnailImageUrl"
+                value={thumbnailQuery}
+                onChange={(e) => setThumbnailQuery(e.target.value)}
+                placeholder="Search for thumbnail image..."
+              />
+              {thumbnailQuery && (
+                <ul className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-gray-200 shadow-xl rounded-lg max-h-72 overflow-y-auto">
+                  {thumbnailImagesDropdownList.map((image) => (
+                    <li
+                      key={image.id}
+                      onClick={() => handleSetThumbnailPreview(image)}
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-primary/5 cursor-pointer border-b last:border-0 border-gray-50"
+                    >
+                      <Image
+                        src={image.url}
+                        alt={image.alt}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 object-cover rounded-md shrink-0"
+                        onError={handleImgError}
+                      />
+                      <p className="text-sm truncate">{image.title}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             {thumbnailPreview && (
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2 w-full">
-                <div
-                  className="relative flex flex-col gap-1 bg-light p-2 rounded border border-primary/10 transition-all"
-                  title={thumbnailPreview.title}
+              <div className="relative w-40 group mt-1">
+                <Image
+                  src={thumbnailPreview.url}
+                  alt={thumbnailPreview.alt}
+                  width={400}
+                  height={400}
+                  className="w-full h-auto object-cover rounded-lg border border-gray-200"
+                  onError={handleImgError}
+                />
+                <p className="mt-1 text-xs text-dark/50 truncate">
+                  {thumbnailPreview.title}
+                </p>
+                <button
+                  type="button"
+                  className="absolute top-1.5 right-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-red text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-darker"
+                  onClick={handleRemoveThumbnail}
                 >
-                  <Image
-                    src={thumbnailPreview.url}
-                    alt={thumbnailPreview.alt}
-                    width={400}
-                    height={400}
-                    className="max-w-100 h-auto object-cover rounded"
-                    onError={handleImgError}
-                  />
-                  <p className="whitespace-nowrap overflow-hidden">
-                    {thumbnailPreview?.title}
-                  </p>
-                  <button
-                    className="flex justify-center items-center absolute top-0 right-0 m-2 w-7.5 h-7.5 rounded border-none bg-red text-light hover:bg-red-darker active:[&>svg]:scale-85"
-                    onClick={handleRemoveThumbnail}
-                  >
-                    <FontAwesomeIcon icon={faX} />
-                  </button>
-                </div>
+                  <FontAwesomeIcon icon={faX} className="w-2.5 h-2.5" />
+                </button>
               </div>
             )}
-          </FormGroup>
+          </div>
 
-          {/* Images */}
-          <FormGroup>
-            <FormLabel htmlFor="imagesUrl">Images:</FormLabel>
-
-            <FormInput
-              type="text"
-              id="imageUrls"
-              name="imageUrls"
-              value={imagesQuery}
-              onChange={(e) => setImagesQuery(e.target.value)}
-              title="Uploaded images are displayed on the products page"
-              placeholder="Search for Images"
-            />
-
-            {imagesQuery && (
-              <ul className="flex flex-col gap-2 max-h-85 overflow-y-auto p-2 bg-light border-2 border-primary/20 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded">
-                {imagesDropdownList.map((image) => (
-                  <li
+          {/* Gallery Images */}
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="imageUrls">Gallery Images</FieldLabel>
+            <div className="relative">
+              <FormInput
+                type="text"
+                id="imageUrls"
+                name="imageUrls"
+                value={imagesQuery}
+                onChange={(e) => setImagesQuery(e.target.value)}
+                placeholder="Search for images..."
+              />
+              {imagesQuery && (
+                <ul className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-gray-200 shadow-xl rounded-lg max-h-72 overflow-y-auto">
+                  {imagesDropdownList.map((image) => (
+                    <li
+                      key={image.id}
+                      onClick={() => handleSetImagesPreview(image)}
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-primary/5 cursor-pointer border-b last:border-0 border-gray-50"
+                    >
+                      <Image
+                        src={image.url}
+                        alt={image.alt}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 object-cover rounded-md shrink-0"
+                        onError={handleImgError}
+                      />
+                      <p className="text-sm truncate">{image.title}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {imagePreviews?.length > 0 && (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2 mt-1">
+                {imagePreviews.map((image) => (
+                  <div
+                    className="relative group rounded-lg overflow-hidden border border-gray-200"
                     key={image.id}
-                    onClick={() => handleSetImagesPreview(image)}
-                    className="flex items-center gap-4 rounded p-2 hover:bg-primary/10 cursor-pointer"
+                    title={image.title}
                   >
                     <Image
                       src={image.url}
                       alt={image.alt}
-                      width={100}
-                      height={100}
-                      className="max-w-25 h-auto rounded"
+                      width={240}
+                      height={240}
+                      className="w-full h-24 object-cover"
                       onError={handleImgError}
                     />
-                    <p>{image.title}</p>
-                  </li>
+                    <p className="px-1.5 py-1 text-xs truncate text-dark/60 bg-white">
+                      {image.title}
+                    </p>
+                    <button
+                      type="button"
+                      className="absolute top-1.5 right-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-red text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-darker"
+                      onClick={() => handleRemovePreviewImage(image)}
+                    >
+                      <FontAwesomeIcon icon={faX} className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
+          </div>
+        </SectionCard>
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2 w-full">
-              {imagePreviews?.map((image) => (
-                <div
-                  className="relative flex flex-col gap-1 bg-light p-2 rounded border border-primary/10 transition-all"
-                  key={image.id}
-                  title={image.title}
-                >
-                  <Image
-                    src={image.url}
-                    alt={image.alt}
-                    width={400}
-                    height={400}
-                    className="max-w-100 h-auto object-cover rounded"
-                    onError={handleImgError}
-                  />
-                  <p className="whitespace-nowrap overflow-hidden">
-                    {image.title}
-                  </p>
-                  <button
-                    className="flex justify-center items-center absolute top-0 right-0 m-2 w-7.5 h-7.5 rounded border-none bg-red text-light hover:bg-red-darker active:[&>svg]:scale-85"
-                    onClick={() => handleRemovePreviewImage(image)}
-                  >
-                    <FontAwesomeIcon icon={faX} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </FormGroup>
-
+        {/* ── 7. Physical Attributes ──────────────────────────────────────── */}
+        <SectionCard step={7} title="Physical Attributes">
           {/* Materials */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="materials"
-              title="Seperate with commas! - PLA, Metal, Wood, etc"
-            >
-              Materials:
-            </FormLabel>
-
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="materials">
+              Materials{" "}
+              <span className="font-normal normal-case">(comma-separated)</span>
+            </FieldLabel>
             <FormInput
               type="text"
               id="materials"
               name="materials"
               value={formData.materials}
               onChange={handleChange}
-              title="Seperate with commas! - PLA, Metal, Wood, etc"
-              placeholder="Seperate with commas! - PLA, Metal, Wood, etc"
+              placeholder="PLA, Metal, Wood, etc."
             />
-          </FormGroup>
+          </div>
 
           {/* Size */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="size"
-              title="Enter the total size of the product"
-            >
-              Size: {"(mm)"}
-            </FormLabel>
-            <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
+            <FieldLabel>
+              Size <span className="font-normal normal-case">(mm)</span>
+            </FieldLabel>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-dark/40">Width (X)</span>
+                <FormInput
+                  type="number"
+                  id="size.width"
+                  name="size.width"
+                  value={formData.size.width}
+                  onChange={handleChange}
+                  placeholder="0"
+                  step={0.1}
+                  min={0}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-dark/40">Height (Y)</span>
+                <FormInput
+                  type="number"
+                  id="size.height"
+                  name="size.height"
+                  value={formData.size.height}
+                  onChange={handleChange}
+                  placeholder="0"
+                  step={0.1}
+                  min={0.1}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-dark/40">Depth (Z)</span>
+                <FormInput
+                  type="number"
+                  id="size.depth"
+                  name="size.depth"
+                  value={formData.size.depth}
+                  onChange={handleChange}
+                  placeholder="0"
+                  step={0.1}
+                  min={0}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Weight + Colors */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="weight">
+                Weight <span className="font-normal normal-case">(g)</span>
+              </FieldLabel>
               <FormInput
                 type="number"
-                id="size.width"
-                name="size.width"
-                value={formData.size.width}
+                id="weight"
+                name="weight"
+                value={formData.weight}
                 onChange={handleChange}
-                placeholder="Width - X"
-                title="Enter the products width"
-                step={0.1}
-                min={0}
-              />
-              <FormInput
-                type="number"
-                id="size.height"
-                name="size.height"
-                value={formData.size.height}
-                onChange={handleChange}
-                placeholder="Height - Y"
-                title="Enter the products height"
-                step={0.1}
-                min={0.1}
-              />
-              <FormInput
-                type="number"
-                id="size.depth"
-                name="size.depth"
-                value={formData.size.depth}
-                onChange={handleChange}
-                placeholder="Depth - Z"
-                title="Enter the products depth"
-                step={0.1}
+                placeholder="0"
                 min={0}
               />
             </div>
-          </FormGroup>
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="colors">
+                Colors{" "}
+                <span className="font-normal normal-case">
+                  (comma-separated)
+                </span>
+              </FieldLabel>
+              <FormInput
+                type="text"
+                id="colors"
+                name="colors"
+                value={formData.colors}
+                onChange={handleChange}
+                placeholder="Red, Blue, Green, etc."
+              />
+            </div>
+          </div>
+        </SectionCard>
 
-          {/* Weight */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="weight"
-              title="Enter the products weight in Grams!"
-            >
-              Weight: {"(g)"}
-            </FormLabel>
-            <FormInput
-              type="number"
-              id="weight"
-              name="weight"
-              value={formData.weight}
-              onChange={handleChange}
-              title="Enter the products weight in Grams!"
-              placeholder="Enter the products weight in Grams!"
-              min={0}
-            />
-          </FormGroup>
-
-          {/* Colors */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="colors"
-              title="Separate with commas - Red, Blue, Green, etc"
-            >
-              Colors:
-            </FormLabel>
-            <FormInput
-              type="text"
-              id="colors"
-              name="colors"
-              value={formData.colors}
-              onChange={handleChange}
-              title="Separate with commas - Red, Blue, Green, etc"
-              placeholder="Separate with commas - Red, Blue, Green, etc"
-            />
-          </FormGroup>
-
-          {/* Variants */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="variants"
-              title="These will be listed on the products website"
-            >
-              Variants:
-            </FormLabel>
-            <FormInput
-              type="text"
-              id="variants"
-              name="variants"
-              value={variantsQuery}
-              onChange={(e) => setVariantsQuery(e.target.value)}
-              title="These will be listed on the products website"
-              placeholder="Search for products ..."
-            />
-            {variantsQuery && (
-              <ul className="flex flex-col gap-2 max-h-85 overflow-y-auto p-2 bg-light border-2 border-primary/20 shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded">
-                {variantsDropdownList.map((variant) => (
-                  <li
-                    key={variant.id}
-                    onClick={() => handleSetVariantsPreview(variant)}
-                    className="flex items-center gap-4 rounded p-2 hover:bg-primary/10 cursor-pointer"
-                  >
-                    {(() => {
-                      const img = getImageById(variant.thumbnailId);
-                      return (
+        {/* ── 8. Variants ─────────────────────────────────────────────────── */}
+        <SectionCard step={8} title="Variants">
+          <div className="flex flex-col gap-2">
+            <FieldLabel htmlFor="variants">Search Related Products</FieldLabel>
+            <div className="relative">
+              <FormInput
+                type="text"
+                id="variants"
+                name="variants"
+                value={variantsQuery}
+                onChange={(e) => setVariantsQuery(e.target.value)}
+                placeholder="Search for products..."
+              />
+              {variantsQuery && (
+                <ul className="absolute z-20 left-0 right-0 top-full mt-1 bg-white border border-gray-200 shadow-xl rounded-lg max-h-72 overflow-y-auto">
+                  {variantsDropdownList.map((variant) => {
+                    const img = getImageById(variant.thumbnailId);
+                    return (
+                      <li
+                        key={variant.id}
+                        onClick={() => handleSetVariantsPreview(variant)}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-primary/5 cursor-pointer border-b last:border-0 border-gray-50"
+                      >
                         <Image
                           src={img?.url || "/images/image-not-found.png"}
                           alt={img?.alt || variant.title}
-                          width={100}
-                          height={100}
-                          className="max-w-25 h-auto rounded"
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 object-cover rounded-md shrink-0"
                           onError={handleImgError}
                         />
-                      );
-                    })()}
+                        <p className="text-sm truncate">{variant.title}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
 
-                    <p>{variant.title}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-2 w-full">
-              {variantsPreviews?.map((variant) => (
-                <div
-                  className="relative flex flex-col gap-1 bg-light p-2 rounded border border-primary/10 transition-all"
-                  key={variant.id}
-                  title={variant.title}
-                >
-                  {(() => {
-                    const img = getImageById(variant.thumbnailId);
-                    return (
+            {variantsPreviews?.length > 0 && (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2 mt-1">
+                {variantsPreviews.map((variant) => {
+                  const img = getImageById(variant.thumbnailId);
+                  return (
+                    <div
+                      className="relative group rounded-lg overflow-hidden border border-gray-200"
+                      key={variant.id}
+                      title={variant.title}
+                    >
                       <Image
                         src={img?.url || "/images/image-not-found.png"}
                         alt={img?.alt || variant.title}
-                        width={400}
-                        height={400}
-                        className="max-w-100 h-auto object-cover rounded"
+                        width={240}
+                        height={240}
+                        className="w-full h-24 object-cover"
                         onError={handleImgError}
                       />
-                    );
-                  })()}
+                      <p className="px-1.5 py-1 text-xs truncate text-dark/60 bg-white">
+                        {variant.title}
+                      </p>
+                      <button
+                        type="button"
+                        className="absolute top-1.5 right-1.5 flex items-center justify-center w-6 h-6 rounded-full bg-red text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-darker"
+                        onClick={() => handleRemovePreviewVariant(variant)}
+                      >
+                        <FontAwesomeIcon icon={faX} className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </SectionCard>
 
-                  <p className="whitespace-nowrap overflow-hidden">
-                    {variant.title}
-                  </p>
-                  <button
-                    className="flex justify-center items-center absolute top-0 right-0 m-2 w-7.5 h-7.5 rounded border-none bg-red text-light hover:bg-red-darker active:[&>svg]:scale-85"
-                    onClick={() => handleRemovePreviewVariant(variant)}
-                  >
-                    <FontAwesomeIcon icon={faX} />
-                  </button>
-                </div>
-              ))}
+        {/* ── 9. Attribution & Metadata ───────────────────────────────────── */}
+        <SectionCard step={9} title="Attribution & Metadata">
+          {/* Creator row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="creatorManufacturer">
+                Creator / Manufacturer
+              </FieldLabel>
+              <FormInput
+                type="text"
+                id="creatorManufacturer"
+                name="creatorManufacturer"
+                value={formData.creatorManufacturer}
+                onChange={handleChange}
+                placeholder="Creator or manufacturer name"
+              />
             </div>
-          </FormGroup>
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="creatorManufacturerUrl">
+                Creator URL
+              </FieldLabel>
+              <FormInput
+                type="text"
+                id="creatorManufacturerUrl"
+                name="creatorManufacturerUrl"
+                value={formData.creatorManufacturerUrl}
+                onChange={handleChange}
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+
+          {/* EAN + Product Code row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="eanBarcode">EAN Barcode</FieldLabel>
+              <FormInput
+                type="text"
+                id="eanBarcode"
+                name="eanBarcode"
+                value={formData.eanBarcode}
+                onChange={handleChange}
+                placeholder="Scan or enter barcode"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="productCode">Product Code</FieldLabel>
+              <FormInput
+                type="text"
+                id="productCode"
+                name="productCode"
+                value={formData.productCode}
+                onChange={handleChange}
+                placeholder="Short product identifier"
+              />
+            </div>
+          </div>
 
           {/* Search Keywords */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="searchKeywords"
-              title="These keywords will be used to easily find them later! And google visibility... I think?"
-            >
-              Search Keywords:
-            </FormLabel>
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="searchKeywords">
+              Search Keywords{" "}
+              <span className="font-normal normal-case">(comma-separated)</span>
+            </FieldLabel>
             <FormInput
               type="text"
               id="searchKeywords"
               name="searchKeywords"
               value={formData.searchKeywords}
               onChange={handleChange}
-              title="These keywords will be used to easily find them later! And google visibility... I think?"
-              placeholder="Seperate with commas! Pokemon, Squirtle, Blue, etc..."
+              placeholder="Pokemon, Squirtle, Blue, etc."
             />
-          </FormGroup>
+          </div>
+        </SectionCard>
 
-          {/* Creator */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="creatorManufacturer"
-              title="The creator or manufacturer of the product"
-            >
-              Creator / Manufacturer:
-            </FormLabel>
-            <FormInput
-              type="text"
-              id="creatorManufacturer"
-              name="creatorManufacturer"
-              value={formData.creatorManufacturer}
-              onChange={handleChange}
-              title="The creator or manufacturer of the product"
-              placeholder="Enter the creator or manufacturers name"
-            />
-          </FormGroup>
-
-          {/* Creator URL */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="creatorManufacturerUrl"
-              title="The URL of creator or manufacturer of the product"
-            >
-              Creator / Manufacturer URL:
-            </FormLabel>
-            <FormInput
-              type="text"
-              id="creatorManufacturerUrl"
-              name="creatorManufacturerUrl"
-              value={formData.creatorManufacturerUrl}
-              onChange={handleChange}
-              title="The URL of creator or manufacturer of the product"
-              placeholder="Enter the URL of creator or manufacturers name"
-            />
-          </FormGroup>
-
-          {/* EAN Barcode */}
-          <FormGroup>
-            <FormLabel htmlFor="eanBarcode" title="The barcode of the product">
-              EAN Barcode:
-            </FormLabel>
-            <FormInput
-              type="text"
-              id="eanBarcode"
-              name="eanBarcode"
-              value={formData.eanBarcode}
-              onChange={handleChange}
-              title="The barcode of the product"
-              placeholder="Enter or scan the products barcode"
-            />
-          </FormGroup>
-
-          {/* Product Code */}
-          <FormGroup>
-            <FormLabel
-              htmlFor="productCode"
-              title="The websites product specific identifier, simplified"
-            >
-              Product Code:
-            </FormLabel>
-            <FormInput
-              type="text"
-              id="productCode"
-              name="productCode"
-              value={formData.productCode}
-              onChange={handleChange}
-              title="The websites product specific identifier, simplified"
-              placeholder="Enter a shorter code for the product"
-            />
-          </FormGroup>
-        </FormFieldset>
-
+        {/* ── Category-Specific Sections ───────────────────────────────────── */}
         {formData.categories.length > 0 && (
-          <div className="w-full flex flex-col gap-1">
-            <h1 className="text-3xl font-bold">Category Specific Data</h1>
+          <div className="pb-1 border-b-2 border-primary/20">
+            <h2 className="text-lg font-bold text-primary tracking-tight">
+              Category-Specific Data
+            </h2>
           </div>
         )}
 
-        {/* POKEMON RELATED DATA */}
+        {/* POKEMON DATA */}
         {categories.some(
           (cat) =>
             formData.categories.includes(cat.id) && cat.name === "Pokemon",
@@ -1292,7 +1251,7 @@ const ProductsForm = () => {
           <CategoryPokemon formData={formData} handleChange={handleChange} />
         )}
 
-        {/* 3D Print  Data */}
+        {/* 3D PRINT DATA */}
         {categories.some(
           (cat) =>
             formData.categories.includes(cat.id) && cat.name === "3D-Printed",
@@ -1306,10 +1265,14 @@ const ProductsForm = () => {
           />
         )}
 
-        <button className="sticky bottom-0 z-100 w-full text-base p-4 rounded border border-primary-darker text-light font-bold bg-primary shadow-[0_0_4px_1px_rgba(0,0,0,0.8)] hover:bg-primary-lighter active:[&>p]:scale-90">
-          <p className="text-xl">
-            {inEditMode ? "Update Product" : "Add Product"}
-          </p>
+        {/* ── Submit ───────────────────────────────────────────────────────── */}
+        <button
+          type="submit"
+          className="sticky bottom-4 z-50 w-full py-4 rounded-xl border border-primary-darker text-light font-bold bg-primary shadow-[0_4px_20px_rgba(17,62,83,0.45)] hover:bg-primary-lighter transition-colors active:scale-[0.99]"
+        >
+          <span className="text-base tracking-wide">
+            {inEditMode ? "Save Changes" : "Create Product"}
+          </span>
         </button>
       </form>
 
