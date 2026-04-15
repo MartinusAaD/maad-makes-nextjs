@@ -17,6 +17,7 @@ MAaD Makes is a modern web application for showcasing and selling unique 3D prin
 
 - React 19
 - Next.js 16
+- TypeScript 6
 - Tailwind CSS 4
 - Firebase (Firestore, Auth, Functions)
 - Cloudinary (for images)
