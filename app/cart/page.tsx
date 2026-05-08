@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { useCategories } from "@/context/CategoriesContext";
 import { useOrders } from "@/context/OrdersContext";
 import { useImages } from "@/context/ImagesContext";
 import { useAuth } from "@/context/AuthContext";
@@ -53,12 +52,13 @@ interface AlertState {
   type: AlertType;
 }
 
+const REGULAR_BALL_CATEGORY_ID = "RlgCFrKgibcACsCcPOvZ";
+
 export default function CartPage() {
   const router = useRouter();
   const { images } = useImages();
   const { createOrder } = useOrders();
   const { currentUser, isAdmin } = useAuth();
-  const { categories } = useCategories();
   const {
     cartItems,
     updateQuantity,
@@ -69,20 +69,14 @@ export default function CartPage() {
     shippingCost,
   } = useCart();
 
-  const regularBallCategoryId = useMemo(
-    () => categories.find((c) => c.name === "Balls 100%")?.id ?? null,
-    [categories],
-  );
-
   const bulkDiscount = useMemo(() => {
-    if (!regularBallCategoryId) return 0;
     const ballQty = cartItems.reduce((total, item) => {
-      return (item.categories || []).includes(regularBallCategoryId)
+      return (item.categories || []).includes(REGULAR_BALL_CATEGORY_ID)
         ? total + item.quantity
         : total;
     }, 0);
     return ballQty >= 3 ? ballQty * 50 : 0;
-  }, [cartItems, regularBallCategoryId]);
+  }, [cartItems]);
 
   const finalTotal = getTotal() - bulkDiscount;
 
@@ -239,9 +233,9 @@ export default function CartPage() {
       }
 
       const orderItems =
-        bulkDiscount > 0 && regularBallCategoryId
+        bulkDiscount > 0 && REGULAR_BALL_CATEGORY_ID
           ? cartItems.map((item) =>
-              (item.categories || []).includes(regularBallCategoryId)
+              (item.categories || []).includes(REGULAR_BALL_CATEGORY_ID)
                 ? { ...item, price: item.price - 50 }
                 : item,
             )
@@ -371,8 +365,8 @@ export default function CartPage() {
                 const imgSrc = image?.url || "/images/image-not-found.png";
                 const isBallDiscounted =
                   bulkDiscount > 0 &&
-                  regularBallCategoryId !== null &&
-                  (item.categories || []).includes(regularBallCategoryId);
+                  REGULAR_BALL_CATEGORY_ID !== null &&
+                  (item.categories || []).includes(REGULAR_BALL_CATEGORY_ID);
                 return (
                   <div
                     key={item.id}
