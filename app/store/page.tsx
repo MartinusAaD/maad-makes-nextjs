@@ -157,9 +157,9 @@ export default function StorePage() {
   const activeProductCount = productsToRender.filter((p) => p.isActive).length;
 
   const categoriesContent = (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between pb-2 border-b border-gray-200">
-        <h3 className="text-sm font-bold text-dark uppercase tracking-wider">
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between pb-2 border-b border-gray-100 mb-1">
+        <h3 className="text-xs font-bold text-dark/40 uppercase tracking-widest">
           Filters
         </h3>
         {selectedCategories.length > 0 && (
@@ -184,9 +184,9 @@ export default function StorePage() {
               );
             else setSelectedCategories((prev) => [...prev, "on-sale"]);
           }}
-          className={`text-left py-2 px-2.5 border cursor-pointer rounded font-bold transition-colors ${selectedCategories.includes("on-sale") ? "bg-yellow text-dark border-yellow-darker" : "bg-yellow-darker text-dark border-yellow hover:bg-yellow active:bg-yellow-darker"}`}
+          className={`text-left py-2 px-3 border cursor-pointer rounded-lg font-bold text-sm transition-colors ${selectedCategories.includes("on-sale") ? "bg-yellow text-dark border-yellow-darker" : "bg-yellow/10 text-yellow-darker border-yellow/40 hover:bg-yellow/20"}`}
         >
-          🔥On Sale!
+          🔥 On Sale!
         </button>
       )}
 
@@ -216,7 +216,7 @@ export default function StorePage() {
                   });
                 }
               }}
-              className={`text-left py-2 px-2.5 border border-gray-300 text-light cursor-pointer rounded transition-colors font-semibold ${parentActive ? "bg-primary-lighter" : "bg-primary-darker hover:bg-primary active:bg-primary-lighter"}`}
+              className={`text-left py-2 px-3 border cursor-pointer rounded-lg transition-colors font-semibold text-sm ${parentActive ? "bg-primary text-light border-primary" : "bg-white text-dark border-gray-200 hover:border-primary hover:text-primary"}`}
             >
               {parentLabel}
             </button>
@@ -246,7 +246,7 @@ export default function StorePage() {
                           });
                         }
                       }}
-                      className={`text-left py-1.5 px-2 text-sm border border-gray-300 text-light cursor-pointer rounded transition-colors ${subActive ? "bg-primary-lighter" : "bg-primary-darker hover:bg-primary"}`}
+                      className={`text-left py-1.5 px-2.5 text-sm border cursor-pointer rounded-lg transition-colors ${subActive ? "bg-primary/10 text-primary border-primary" : "bg-white text-dark/70 border-gray-200 hover:border-primary hover:text-primary"}`}
                     >
                       <FontAwesomeIcon icon={faArrowTurnUp} rotation={90} />{" "}
                       {subLabel}
@@ -262,55 +262,55 @@ export default function StorePage() {
   );
 
   return (
-    <div className="flex pt-8 pb-16">
+    <div className="min-h-screen">
       <ResponsiveWidthWrapper>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1 pb-4 border-b border-gray-200">
-            <div>
-              <h1 className="text-3xl font-bold text-dark">Store</h1>
-              <p className="text-sm text-gray-400 mt-1">
-                {activeProductCount} product
-                {activeProductCount !== 1 ? "s" : ""} found
-              </p>
-            </div>
+        <div className="pt-8 pb-5 border-b border-gray-100">
+          <div className="mb-5">
+            <h1 className="text-4xl font-bold text-dark tracking-tight">
+              Store
+            </h1>
+            <p className="text-sm text-dark/40 mt-1">
+              {activeProductCount} product
+              {activeProductCount !== 1 ? "s" : ""} found
+            </p>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex flex-1 items-center relative">
+          {/* Full-width search + sort row */}
+          <div className="flex gap-3 items-center">
+            <div className="relative flex-1">
               <FontAwesomeIcon
                 icon={faSearch}
-                className="absolute left-3 text-gray-400 pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-dark/30 pointer-events-none text-sm"
               />
               <input
                 aria-label="Search products"
                 placeholder="Search products..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className={`w-full p-2 pl-10 border border-gray-300 rounded bg-white focus:outline-none focus:border-primary/70 transition-colors${search ? " pr-9" : ""}`}
+                className={`w-full py-2.5 pl-9 pr-4 rounded-lg border border-gray-200 bg-white text-dark placeholder:text-dark/30 focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 transition-colors text-sm${search ? " pr-9" : ""}`}
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dark/30 hover:text-dark/60 transition-colors"
                   aria-label="Clear search"
                 >
                   <FontAwesomeIcon icon={faXmark} />
                 </button>
               )}
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2 shrink-0">
               <label
-                className="font-bold text-dark shrink-0"
                 htmlFor="store-sort"
+                className="text-xs font-semibold text-dark/40 uppercase tracking-widest hidden sm:block"
               >
-                Sort:
+                Sort
               </label>
               <select
                 id="store-sort"
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="flex-1 sm:flex-none p-2 rounded border-2 border-primary/50 bg-light text-dark cursor-pointer hover:border-primary focus:border-primary focus:outline-none transition-colors"
+                className="text-sm py-2.5 px-2.5 rounded-lg border border-gray-200 bg-white text-dark cursor-pointer hover:border-primary focus:border-primary focus:outline-none transition-colors"
               >
                 <option value="default">Default</option>
                 <option value="title-asc">Title A → Z</option>
@@ -322,66 +322,77 @@ export default function StorePage() {
               </select>
             </div>
           </div>
+        </div>
+      </ResponsiveWidthWrapper>
 
+      <ResponsiveWidthWrapper>
+        <div className="flex flex-col gap-5 py-6 pb-16">
+          {/* Mobile filter button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="w-full py-3 px-4 bg-primary text-light rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-primary-lighter transition-colors active:scale-95"
+              className="w-full py-2.5 px-4 bg-white border border-gray-200 text-dark rounded-lg font-semibold flex items-center justify-center gap-2 hover:border-primary hover:text-primary transition-colors text-sm"
             >
               <FontAwesomeIcon icon={faFilter} />
               Filters
               {activeFilterCount > 0 && (
-                <span className="ml-1 bg-yellow text-dark rounded-full px-2 py-0.5 text-sm font-bold">
+                <span className="ml-1 bg-primary text-light rounded-full px-2 py-0.5 text-xs font-bold">
                   {activeFilterCount}
                 </span>
               )}
             </button>
           </div>
 
-          <div className="grid md:grid-cols-[220px_1fr] gap-4 items-start">
+          <div className="grid md:grid-cols-[200px_1fr] gap-6 items-start">
+            {/* Desktop sidebar */}
             <aside className="hidden md:block w-full">
               <div className="sticky top-4">{categoriesContent}</div>
             </aside>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 w-full">
-              <InfoCard />
-              {productsToRender
-                .filter((product) => product.isActive)
-                .map((product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    animationDelay={index * 0.05}
-                  />
-                ))}
-              {activeProductCount === 0 && (
-                <div className="col-span-full flex flex-col items-center justify-center py-16 px-4 text-center">
-                  <FontAwesomeIcon
-                    icon={faSearch}
-                    className="text-5xl text-gray-200 mb-4"
-                  />
-                  <h3 className="text-lg font-bold text-gray-400 mb-2">
-                    No products found
-                  </h3>
-                  <p className="text-sm text-gray-400 mb-4">
-                    Try adjusting your search or clearing your filters
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearch("");
-                      setSelectedCategories([]);
-                    }}
-                    className="text-primary font-semibold text-sm hover:underline"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
+
+            {/* Product grid */}
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 w-full">
+                <InfoCard />
+                {productsToRender
+                  .filter((product) => product.isActive)
+                  .map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      animationDelay={index * 0.05}
+                    />
+                  ))}
+                {activeProductCount === 0 && (
+                  <div className="col-span-full flex flex-col items-center justify-center py-16 px-4 text-center">
+                    <FontAwesomeIcon
+                      icon={faSearch}
+                      className="text-5xl text-gray-200 mb-4"
+                    />
+                    <h3 className="text-lg font-bold text-gray-400 mb-2">
+                      No products found
+                    </h3>
+                    <p className="text-sm text-gray-400 mb-4">
+                      Try adjusting your search or clearing your filters
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch("");
+                        setSelectedCategories([]);
+                      }}
+                      className="text-primary font-semibold text-sm hover:underline"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </ResponsiveWidthWrapper>
 
+      {/* Mobile filter overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-40 md:hidden transition-opacity duration-300 ${isFilterOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
         onClick={() => setIsFilterOpen(false)}
@@ -392,27 +403,29 @@ export default function StorePage() {
         className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${isFilterOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b-2 border-primary bg-primary">
-            <h2 className="text-xl font-bold text-light">Filters</h2>
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-primary">
+            <h2 className="text-base font-bold text-light tracking-tight">
+              Filters
+            </h2>
             <button
               onClick={() => setIsFilterOpen(false)}
-              className="text-light p-2 hover:bg-primary-lighter rounded-lg transition-colors"
+              className="text-light/70 p-2 hover:text-light rounded-lg transition-colors"
               aria-label="Close filters"
             >
-              <FontAwesomeIcon icon={faXmark} className="text-xl" />
+              <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">{categoriesContent}</div>
-          <div className="p-4 border-t-2 border-gray-200 flex gap-2">
+          <div className="p-4 border-t border-gray-100 flex gap-2">
             <button
               onClick={() => setSelectedCategories([])}
-              className="flex-1 py-2 px-4 bg-gray-300 text-dark rounded-lg font-semibold hover:bg-gray-400 transition-colors active:scale-95"
+              className="flex-1 py-2 px-4 bg-white border border-gray-200 text-dark rounded-lg font-semibold hover:border-primary hover:text-primary transition-colors text-sm"
             >
               Clear All
             </button>
             <button
               onClick={() => setIsFilterOpen(false)}
-              className="flex-1 py-2 px-4 bg-primary text-light rounded-lg font-semibold hover:bg-primary-lighter transition-colors active:scale-95"
+              className="flex-1 py-2 px-4 bg-primary text-light rounded-lg font-semibold hover:bg-primary-lighter transition-colors text-sm"
             >
               Apply
             </button>
