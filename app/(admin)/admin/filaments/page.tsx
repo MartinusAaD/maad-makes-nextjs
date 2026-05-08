@@ -889,7 +889,7 @@ export default function FilamentsPage() {
                                 />
                               </div>
                               <span className="text-xs text-dark/40 shrink-0">
-                                {weightPercent}% remaining
+                                {filament.weightRemaining} grams remaining
                               </span>
                             </div>
                           )}
