@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
+import { useCategories } from "@/context/CategoriesContext";
 import { useOrders } from "@/context/OrdersContext";
 import { useImages } from "@/context/ImagesContext";
 import { useAuth } from "@/context/AuthContext";
@@ -57,6 +58,7 @@ export default function CartPage() {
   const { images } = useImages();
   const { createOrder } = useOrders();
   const { currentUser, isAdmin } = useAuth();
+  const { categories } = useCategories();
   const {
     cartItems,
     updateQuantity,
@@ -66,6 +68,23 @@ export default function CartPage() {
     getTotal,
     shippingCost,
   } = useCart();
+
+  const regularBallCategoryId = useMemo(
+    () => categories.find((c) => c.name === "Balls 100%")?.id ?? null,
+    [categories],
+  );
+
+  const bulkDiscount = useMemo(() => {
+    if (!regularBallCategoryId) return 0;
+    const ballQty = cartItems.reduce((total, item) => {
+      return (item.categories || []).includes(regularBallCategoryId)
+        ? total + item.quantity
+        : total;
+    }, 0);
+    return ballQty >= 3 ? ballQty * 50 : 0;
+  }, [cartItems, regularBallCategoryId]);
+
+  const finalTotal = getTotal() - bulkDiscount;
 
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertState | null>(null);
@@ -184,7 +203,7 @@ export default function CartPage() {
 
   const onSubmitOrder = async (data: CartFormData) => {
     setAlert(null);
-    trackBeginCheckout(cartItems, getTotal());
+    trackBeginCheckout(cartItems, finalTotal);
     if (cartItems.length === 0) {
       setAlert({ alertMessage: "Your cart is empty", type: "error" });
       return;
@@ -219,9 +238,23 @@ export default function CartPage() {
         if (userDoc.exists()) customerNumber = userDoc.data().customerNumber;
       }
 
+      const orderItems =
+        bulkDiscount > 0 && regularBallCategoryId
+          ? cartItems.map((item) =>
+              (item.categories || []).includes(regularBallCategoryId)
+                ? { ...item, price: item.price - 50 }
+                : item,
+            )
+          : cartItems;
+
+      const orderSubtotal = orderItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+
       let savings = 0;
-      cartItems.forEach((item) => {
-        if (item.isOnSale && item.originalPrice)
+      orderItems.forEach((item) => {
+        if (item.originalPrice && item.price < item.originalPrice)
           savings += (item.originalPrice - item.price) * item.quantity;
       });
 
@@ -229,11 +262,11 @@ export default function CartPage() {
         customer: customerInfo,
         customerNumber,
         ipHash,
-        items: cartItems,
-        subtotal: getSubtotal(),
+        items: orderItems,
+        subtotal: orderSubtotal,
         shipping: shippingCost,
         savings,
-        total: getTotal(),
+        total: orderSubtotal + shippingCost,
         isDemo: demoMode,
       };
 
@@ -246,11 +279,11 @@ export default function CartPage() {
         JSON.stringify({
           orderNumber: result.orderNumber,
           customer: customerInfo,
-          items: cartItems,
-          subtotal: getSubtotal(),
+          items: orderItems,
+          subtotal: orderSubtotal,
           shipping: shippingCost,
           savings,
-          total: getTotal(),
+          total: orderSubtotal + shippingCost,
           isDemo: demoMode,
         }),
       );
@@ -313,8 +346,8 @@ export default function CartPage() {
               title={demoMode ? "Confirm Demo Order" : "Confirm Order"}
               alertMessage={
                 demoMode
-                  ? `You are about to place a DEMO order for ${cartItems.length} item${cartItems.length > 1 ? "s" : ""} totaling ${getTotal().toFixed(2)} kr. This is a demo order for portfolio purposes only and will not result in an actual purchase.`
-                  : `You are about to place an order for ${cartItems.length} item${cartItems.length > 1 ? "s" : ""} totaling ${getTotal().toFixed(2)} kr. You will be contacted regarding payment and estimated completion time.`
+                  ? `You are about to place a DEMO order for ${cartItems.length} item${cartItems.length > 1 ? "s" : ""} totaling ${finalTotal.toFixed(2)} kr. This is a demo order for portfolio purposes only and will not result in an actual purchase.`
+                  : `You are about to place an order for ${cartItems.length} item${cartItems.length > 1 ? "s" : ""} totaling ${finalTotal.toFixed(2)} kr. You will be contacted regarding payment and estimated completion time.`
               }
               onConfirm={confirmPlaceOrder}
               onCancel={() => setShowConfirmDialog(false)}
@@ -336,6 +369,10 @@ export default function CartPage() {
               {cartItems.map((item) => {
                 const image = getItemImage(item.thumbnailId);
                 const imgSrc = image?.url || "/images/image-not-found.png";
+                const isBallDiscounted =
+                  bulkDiscount > 0 &&
+                  regularBallCategoryId !== null &&
+                  (item.categories || []).includes(regularBallCategoryId);
                 return (
                   <div
                     key={item.id}
@@ -400,15 +437,17 @@ export default function CartPage() {
                     </div>
                     <div className="flex flex-col items-end justify-between">
                       <div className="text-right">
-                        {item.isOnSale && (
+                        {(item.isOnSale || isBallDiscounted) && (
                           <p className="text-sm text-gray-400 line-through">
                             {item.originalPrice * item.quantity}kr
                           </p>
                         )}
                         <p
-                          className={`text-lg font-bold ${item.isOnSale ? "text-primary" : "text-dark"}`}
+                          className={`text-lg font-bold ${item.isOnSale || isBallDiscounted ? "text-green-600" : "text-dark"}`}
                         >
-                          {item.price * item.quantity}kr
+                          {isBallDiscounted
+                            ? (item.price - 50) * item.quantity
+                            : item.price * item.quantity}kr
                         </p>
                       </div>
                       <button
@@ -446,13 +485,19 @@ export default function CartPage() {
                   </span>
                 </div>
               )}
+              {bulkDiscount > 0 && (
+                <div className="flex justify-between mb-2 text-green-600">
+                  <span className="font-semibold">Ball discount (3+ balls):</span>
+                  <span className="font-semibold">-{bulkDiscount}kr</span>
+                </div>
+              )}
               <div className="flex justify-between mb-2">
                 <span className="text-gray-700">Shipping:</span>
                 <span className="font-semibold">{shippingCost}kr</span>
               </div>
               <div className="flex justify-between text-xl font-bold pt-2 border-t border-gray-300">
                 <span>Total:</span>
-                <span className="text-primary">{getTotal()}kr</span>
+                <span className="text-primary">{finalTotal}kr</span>
               </div>
             </div>
           </div>

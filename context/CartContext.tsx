@@ -14,6 +14,7 @@ export interface CartItem {
   thumbnailId: string;
   slug: string;
   quantity: number;
+  categories: string[];
 }
 
 interface CartContextValue {
@@ -93,6 +94,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
           thumbnailId: product.thumbnailId,
           slug: product.slug,
           quantity,
+          categories: Array.isArray(product.categories)
+            ? product.categories
+            : [],
         },
       ];
     });
